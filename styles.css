@@ -40,15 +40,31 @@ header {
     padding: 20px 30px;
     border-radius: 12px;
     box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 20px;
 }
 
-header h1 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-container h1 {
     font-size: 24px;
     color: var(--primary-color);
+    margin: 0;
 }
 
 .user-info {
@@ -358,6 +374,13 @@ tbody tr:hover {
     margin-bottom: 30px;
 }
 
+.login-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 15px;
+}
+
 .login-header h1 {
     font-size: 32px;
     color: var(--primary-color);
@@ -550,10 +573,22 @@ tbody tr:hover {
         padding: 10px;
     }
 
-    header {
+    .header-content {
         flex-direction: column;
         gap: 15px;
         text-align: center;
+    }
+
+    .logo-container {
+        justify-content: center;
+    }
+
+    .logo {
+        height: 40px;
+    }
+
+    .logo-container h1 {
+        font-size: 20px;
     }
 
     .tabs {

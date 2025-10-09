@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Usuários - Fortimed SAC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="img/logo.png" alt="Fortimed" class="login-logo">
+                <h1>Importar Usuários</h1>
+                <p>Sistema Fortimed SAC</p>
+            </div>
+
+            <div class="form-container">
+                <h3>👥 Usuários para Importar</h3>
+                <div class="users-list">
+                    <div class="user-item">
+                        <strong>Admin:</strong> administrativo@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 01:</strong> vendas01@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 02:</strong> vendas02@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 03:</strong> vendas03@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 04:</strong> vendas04@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 05:</strong> vendas05@fortimeddistribuidora.com.br
+                    </div>
+                    <div class="user-item">
+                        <strong>Vendas 06:</strong> vendas06@fortimeddistribuidora.com.br
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button onclick="importarUsuarios()" class="btn-primary btn-block">🚀 Importar Usuários</button>
+                    <button onclick="testarLogins()" class="btn-secondary btn-block">🔐 Testar Logins</button>
+                    <button onclick="window.location.href='index.html'" class="btn-secondary btn-block">⬅️ Voltar ao Sistema</button>
+                </div>
+
+                <div id="resultado" class="message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurações do Supabase
+        const SUPABASE_URL = 'https://iowfcilmbeynrfszqlhu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvd2ZjaWxtYmV5bnJmc3pxbGh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTQ0MzgsImV4cCI6MjA3NTUzMDQzOH0.jhLS67YUFaJUf45Xc732I_oOopaNqpnHnFShJaRdPks';
+
+        // Lista de usuários para criar
+        const usuarios = [
+            {
+                email: 'administrativo@fortimeddistribuidora.com.br',
+                password: 'Compras@01',
+                role: 'admin',
+                name: 'Administrador'
+            },
+            {
+                email: 'vendas01@fortimeddistribuidora.com.br',
+                password: 'vendas01',
+                role: 'user',
+                name: 'Vendas 01'
+            },
+            {
+                email: 'vendas02@fortimeddistribuidora.com.br',
+                password: 'vendas02',
+                role: 'user',
+                name: 'Vendas 02'
+            },
+            {
+                email: 'vendas03@fortimeddistribuidora.com.br',
+                password: 'vendas03',
+                role: 'user',
+                name: 'Vendas 03'
+            },
+            {
+                email: 'vendas04@fortimeddistribuidora.com.br',
+                password: 'vendas04',
+                role: 'user',
+                name: 'Vendas 04'
+            },
+            {
+                email: 'vendas05@fortimeddistribuidora.com.br',
+                password: 'vendas05',
+                role: 'user',
+                name: 'Vendas 05'
+            },
+            {
+                email: 'vendas06@fortimeddistribuidora.com.br',
+                password: 'vendas06',
+                role: 'user',
+                name: 'Vendas 06'
+            }
+        ];
+
+        // Função para mostrar resultado
+        function mostrarResultado(mensagem, tipo = 'info') {
+            const resultado = document.getElementById('resultado');
+            resultado.textContent = mensagem;
+            resultado.className = `message ${tipo}`;
+            resultado.style.display = 'block';
+        }
+
+        // Função para importar usuários
+        async function importarUsuarios() {
+            mostrarResultado('🔄 Iniciando importação de usuários...', 'info');
+            
+            // Criar cliente Supabase
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            let sucessos = 0;
+            let erros = 0;
+            let detalhes = [];
+            
+            for (const usuario of usuarios) {
+                try {
+                    // Criar usuário no Supabase Auth (sem verificação de email)
+                    const { data, error } = await client.auth.signUp({
+                        email: usuario.email,
+                        password: usuario.password,
+                        options: {
+                            emailRedirectTo: undefined, // Desabilitar redirecionamento de email
+                            data: {
+                                name: usuario.name,
+                                role: usuario.role
+                            }
+                        }
+                    });
+                    
+                    if (error) {
+                        detalhes.push(`❌ ${usuario.email}: ${error.message}`);
+                        erros++;
+                    } else {
+                        detalhes.push(`✅ ${usuario.email}: Criado com sucesso`);
+                        sucessos++;
+                    }
+                } catch (error) {
+                    detalhes.push(`❌ ${usuario.email}: Erro inesperado - ${error.message}`);
+                    erros++;
+                }
+                
+                // Aguardar um pouco para evitar rate limiting
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            const mensagem = `📊 Importação concluída!\n✅ Sucessos: ${sucessos}\n❌ Erros: ${erros}\n\nDetalhes:\n${detalhes.join('\n')}`;
+            mostrarResultado(mensagem, erros === 0 ? 'success' : 'error');
+        }
+
+        // Função para testar logins
+        async function testarLogins() {
+            mostrarResultado('🔐 Testando logins dos usuários...', 'info');
+            
+            const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            let sucessos = 0;
+            let erros = 0;
+            let detalhes = [];
+            
+            for (const usuario of usuarios) {
+                try {
+                    const { data, error } = await client.auth.signInWithPassword({
+                        email: usuario.email,
+                        password: usuario.password
+                    });
+                    
+                    if (error) {
+                        detalhes.push(`❌ ${usuario.email}: ${error.message}`);
+                        erros++;
+                    } else {
+                        detalhes.push(`✅ ${usuario.email}: Login bem-sucedido`);
+                        sucessos++;
+                        
+                        // Fazer logout
+                        await client.auth.signOut();
+                    }
+                } catch (error) {
+                    detalhes.push(`❌ ${usuario.email}: Erro inesperado - ${error.message}`);
+                    erros++;
+                }
+            }
+            
+            const mensagem = `🔐 Teste de logins concluído!\n✅ Sucessos: ${sucessos}\n❌ Erros: ${erros}\n\nDetalhes:\n${detalhes.join('\n')}`;
+            mostrarResultado(mensagem, erros === 0 ? 'success' : 'error');
+        }
+    </script>
+
+    <style>
+        .users-list {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--background);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .user-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-item strong {
+            color: var(--primary-color);
+            display: inline-block;
+            width: 100px;
+        }
+    </style>
+</body>
+</html>

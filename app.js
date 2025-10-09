@@ -40,6 +40,7 @@ async function loadOccurrences() {
         const { data, error } = await client
             .from('occurrences')
             .select('*')
+            .eq('created_by', session.user.id) // Filtrar apenas ocorrências do usuário logado
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -122,20 +123,21 @@ async function saveOccurrence(event) {
         }
 
         if (selectedOccurrence) {
-            // Atualizar ocorrência existente
+            // Atualizar ocorrência existente (só se for do usuário logado)
             const { error } = await client
                 .from('occurrences')
                 .update({
                     ...baseData,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', selectedOccurrence.id);
+                .eq('id', selectedOccurrence.id)
+                .eq('created_by', session.user.id); // Garantir que só atualiza suas próprias ocorrências
 
             if (error) throw error;
 
             alert('✅ Ocorrência atualizada com sucesso!');
         } else {
-            // Criar nova ocorrência
+            // Criar nova ocorrência (sempre associada ao usuário logado)
             const { error } = await client
                 .from('occurrences')
                 .insert([{ ...baseData, created_by: session.user.id }]);
@@ -231,6 +233,13 @@ function showOccurrenceDetails(id) {
 function editOccurrence() {
     if (!selectedOccurrence) return;
 
+    // Verificar se a ocorrência pertence ao usuário logado
+    const currentUser = authManager.getCurrentUser();
+    if (selectedOccurrence.created_by !== currentUser.id) {
+        alert('❌ Você só pode editar suas próprias ocorrências.');
+        return;
+    }
+
     // Preencher formulário
     document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
     document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
@@ -259,6 +268,13 @@ function editOccurrenceById(id) {
 async function deleteOccurrence() {
     if (!selectedOccurrence) return;
 
+    // Verificar se a ocorrência pertence ao usuário logado
+    const currentUser = authManager.getCurrentUser();
+    if (selectedOccurrence.created_by !== currentUser.id) {
+        alert('❌ Você só pode excluir suas próprias ocorrências.');
+        return;
+    }
+
     if (!confirm('Tem certeza que deseja excluir esta ocorrência?')) {
         return;
     }
@@ -273,7 +289,8 @@ async function deleteOccurrence() {
         const { error } = await client
             .from('occurrences')
             .delete()
-            .eq('id', selectedOccurrence.id);
+            .eq('id', selectedOccurrence.id)
+            .eq('created_by', session.user.id); // Garantir que só exclui suas próprias ocorrências
 
         if (error) throw error;
 
@@ -291,6 +308,13 @@ async function deleteOccurrenceById(id) {
     const occurrence = currentOccurrences.find(occ => occ.id === id);
     if (!occurrence) return;
 
+    // Verificar se a ocorrência pertence ao usuário logado
+    const currentUser = authManager.getCurrentUser();
+    if (occurrence.created_by !== currentUser.id) {
+        alert('❌ Você só pode excluir suas próprias ocorrências.');
+        return;
+    }
+
     if (!confirm(`Tem certeza que deseja excluir a ocorrência ${occurrence.num_pedido}?`)) {
         return;
     }
@@ -305,7 +329,8 @@ async function deleteOccurrenceById(id) {
         const { error } = await client
             .from('occurrences')
             .delete()
-            .eq('id', id);
+            .eq('id', id)
+            .eq('created_by', session.user.id); // Garantir que só exclui suas próprias ocorrências
 
         if (error) throw error;
 
