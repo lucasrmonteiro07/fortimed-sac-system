@@ -129,26 +129,33 @@ async function saveOccurrence(event) {
             return;
         }
 
-        // Garantir que o usuário existe na tabela users
+        // Verificar se o usuário existe na tabela users, se não existir, criar
         try {
-            const { error: userError } = await client
+            const { data: existingUser, error: checkError } = await client
                 .from('users')
-                .upsert([
-                    {
-                        id: session.user.id,
-                        email: session.user.email,
-                        name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-                        password_hash: 'managed_by_supabase_auth'
-                    }
-                ], { onConflict: 'id' });
+                .select('id')
+                .eq('id', session.user.id)
+                .single();
 
-            if (userError) {
-                console.warn('Aviso ao garantir usuário na tabela users:', userError);
-                // Continuar mesmo com erro, pois pode ser que o usuário já existe
+            if (checkError && checkError.code === 'PGRST116') {
+                // Usuário não existe, criar
+                const { error: insertError } = await client
+                    .from('users')
+                    .insert([
+                        {
+                            id: session.user.id,
+                            email: session.user.email,
+                            name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                            password_hash: 'managed_by_supabase_auth'
+                        }
+                    ]);
+
+                if (insertError) {
+                    console.warn('Erro ao criar usuário:', insertError);
+                }
             }
         } catch (error) {
-            console.warn('Erro ao garantir usuário na tabela users:', error);
-            // Continuar mesmo com erro
+            console.warn('Erro ao verificar/criar usuário:', error);
         }
 
         if (selectedOccurrence) {
