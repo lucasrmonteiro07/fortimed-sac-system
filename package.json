@@ -1,0 +1,18 @@
+{
+  "name": "fortimed-sac-system",
+  "version": "1.0.0",
+  "description": "Sistema de Controle de Ocorrências Fortimed",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build required for static site'"
+  },
+  "keywords": [
+    "fortimed",
+    "sac",
+    "occurrences",
+    "supabase"
+  ],
+  "author": "Fortimed",
+  "license": "ISC"
+}

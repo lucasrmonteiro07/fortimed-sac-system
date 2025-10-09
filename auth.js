@@ -1,0 +1,246 @@
+// Sistema de Autenticação
+
+class AuthManager {
+    constructor() {
+        this.SESSION_KEY = 'fortimed_session';
+        this.checkAuth();
+    }
+
+    checkAuth() {
+        // Se estiver na página de login, não redirecionar
+        if (window.location.pathname.includes('login.html')) {
+            // Se já estiver logado, redirecionar para index
+            if (this.isAuthenticated()) {
+                window.location.href = 'index.html';
+            }
+            return;
+        }
+
+        // Se não estiver na página de login e não estiver autenticado, redirecionar para login
+        if (!this.isAuthenticated()) {
+            window.location.href = 'login.html';
+        } else {
+            this.displayUserInfo();
+        }
+    }
+
+    isAuthenticated() {
+        const session = this.getSession();
+        return !!(session && session.user);
+    }
+
+    getSession() {
+        const sessionData = localStorage.getItem(this.SESSION_KEY);
+        if (sessionData) {
+            try {
+                return JSON.parse(sessionData);
+            } catch (e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    saveSession(user) {
+        const session = {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
+            },
+            timestamp: Date.now()
+        };
+        localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+    }
+
+    clearSession() {
+        localStorage.removeItem(this.SESSION_KEY);
+    }
+
+    displayUserInfo() {
+        const session = this.getSession();
+        if (session && session.user) {
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = `👤 ${session.user.name}`;
+            }
+        }
+    }
+
+    getCurrentUser() {
+        const session = this.getSession();
+        return session ? session.user : null;
+    }
+}
+
+// Instância global do gerenciador de autenticação
+const authManager = new AuthManager();
+
+// Funções de Login
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const messageDiv = document.getElementById('loginMessage');
+
+    messageDiv.className = 'message info';
+    messageDiv.textContent = '🔄 Fazendo login...';
+
+    try {
+        if (!config.isConfigured()) {
+            throw new Error('Sistema não configurado. Entre em contato com o administrador.');
+        }
+
+        const client = config.getClient();
+
+        // Autenticar com Supabase
+        const { data, error } = await client.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        // Buscar dados adicionais do usuário
+        const { data: userData, error: userError } = await client
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+        if (userError && userError.code !== 'PGRST116') {
+            console.error('Erro ao buscar dados do usuário:', userError);
+        }
+
+        // Salvar sessão
+        authManager.saveSession({
+            id: data.user.id,
+            email: data.user.email,
+            name: userData ? userData.name : email.split('@')[0]
+        });
+
+        messageDiv.className = 'message success';
+        messageDiv.textContent = '✅ Login realizado com sucesso!';
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+
+    } catch (error) {
+        console.error('Erro no login:', error);
+        messageDiv.className = 'message error';
+        
+        if (error.message.includes('Invalid login credentials')) {
+            messageDiv.textContent = '❌ Email ou senha incorretos.';
+        } else if (error.message.includes('não configurado')) {
+            messageDiv.textContent = '❌ ' + error.message;
+        } else {
+            messageDiv.textContent = '❌ Erro ao fazer login: ' + error.message;
+        }
+    }
+}
+
+// Funções de Registro
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+    const messageDiv = document.getElementById('registerMessage');
+
+    // Validação de senha
+    if (password !== passwordConfirm) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = '❌ As senhas não coincidem.';
+        return;
+    }
+
+    if (password.length < 6) {
+        messageDiv.className = 'message error';
+        messageDiv.textContent = '❌ A senha deve ter no mínimo 6 caracteres.';
+        return;
+    }
+
+    messageDiv.className = 'message info';
+    messageDiv.textContent = '🔄 Criando conta...';
+
+    try {
+        if (!config.isConfigured()) {
+            throw new Error('Sistema não configurado. Entre em contato com o administrador.');
+        }
+
+        const client = config.getClient();
+
+        // Criar usuário no Supabase Auth
+        const { data, error } = await client.auth.signUp({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        // Inserir dados adicionais na tabela users
+        const { error: insertError } = await client
+            .from('users')
+            .insert([
+                {
+                    id: data.user.id,
+                    email: email,
+                    name: name,
+                    password_hash: 'managed_by_supabase_auth' // Placeholder, senha gerenciada pelo Auth
+                }
+            ]);
+
+        if (insertError && insertError.code !== '23505') { // 23505 = duplicate key
+            console.error('Erro ao inserir dados do usuário:', insertError);
+        }
+
+        messageDiv.className = 'message success';
+        messageDiv.textContent = '✅ Conta criada com sucesso! Redirecionando...';
+
+        // Fazer login automático
+        authManager.saveSession({
+            id: data.user.id,
+            email: email,
+            name: name
+        });
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1500);
+
+    } catch (error) {
+        console.error('Erro no registro:', error);
+        messageDiv.className = 'message error';
+        
+        if (error.message.includes('already registered')) {
+            messageDiv.textContent = '❌ Este email já está cadastrado.';
+        } else if (error.message.includes('não configurado')) {
+            messageDiv.textContent = '❌ ' + error.message;
+        } else {
+            messageDiv.textContent = '❌ Erro ao criar conta: ' + error.message;
+        }
+    }
+}
+
+// Alternar entre formulários de Login e Registro
+function showRegister() {
+    document.getElementById('loginForm').parentElement.style.display = 'none';
+    document.getElementById('registerBox').style.display = 'block';
+}
+
+function showLogin() {
+    document.getElementById('registerBox').style.display = 'none';
+    document.getElementById('loginForm').parentElement.style.display = 'block';
+}
+
+// Função de Logout
+function logout() {
+    if (confirm('Deseja realmente sair?')) {
+        authManager.clearSession();
+        window.location.href = 'login.html';
+    }
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortimed - Sistema de Ocorrências</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏥 Fortimed - Sistema de Ocorrências</h1>
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button onclick="logout()" class="btn-secondary">Sair</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab active" onclick="showTab('lista')">📋 Ocorrências</button>
+            <button class="tab" onclick="showTab('novo')">➕ Nova Ocorrência</button>
+            <button class="tab" onclick="showTab('config')">⚙️ Configurações</button>
+        </nav>
+
+        <!-- Tab: Lista de Ocorrências -->
+        <div id="tab-lista" class="tab-content active">
+            <div class="filters">
+                <input type="text" id="searchOrder" placeholder="Buscar por Nº Pedido..." onkeyup="filterOccurrences()">
+                <select id="filterStatus" onchange="filterOccurrences()">
+                    <option value="">Todos Status</option>
+                    <option value="ABERTO">Aberto</option>
+                    <option value="EM ANDAMENTO">Em Andamento</option>
+                    <option value="RESOLVIDO">Resolvido</option>
+                    <option value="FECHADO">Fechado</option>
+                </select>
+                <button onclick="loadOccurrences()" class="btn-secondary">🔄 Atualizar</button>
+            </div>
+
+            <div class="table-container">
+                <table id="occurrencesTable">
+                    <thead>
+                        <tr>
+                            <th>Nº Pedido</th>
+                            <th>Cliente</th>
+                            <th>Transportadora</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="occurrencesBody">
+                        <tr>
+                            <td colspan="6" class="loading">Carregando ocorrências...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: Nova Ocorrência -->
+        <div id="tab-novo" class="tab-content">
+            <div class="form-container">
+                <h2>Registrar Nova Ocorrência</h2>
+                <form id="occurrenceForm" onsubmit="saveOccurrence(event)">
+                    <div class="form-group">
+                        <label for="numPedido">Nº Pedido:</label>
+                        <input type="text" id="numPedido" required placeholder="Ex: NF 1535">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notaFiscal">Nota Fiscal:</label>
+                        <input type="text" id="notaFiscal" placeholder="Número da Nota Fiscal">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transportadora">Transportadora:</label>
+                        <input type="text" id="transportadora" required placeholder="Ex: EXPRESSO SÃO MIGUEL">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nomeCliente">Nome do Cliente:</label>
+                        <input type="text" id="nomeCliente" required placeholder="Ex: HOESP">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ocorrencia">Ocorrência:</label>
+                        <textarea id="ocorrencia" required rows="4" placeholder="Descreva a ocorrência..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select id="status" required>
+                            <option value="ABERTO">Aberto</option>
+                            <option value="EM ANDAMENTO">Em Andamento</option>
+                            <option value="RESOLVIDO">Resolvido</option>
+                            <option value="FECHADO">Fechado</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="situacao">Situação:</label>
+                        <textarea id="situacao" rows="3" placeholder="Situação atual..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="responsavelFalha">Responsável pela Falha:</label>
+                        <input type="text" id="responsavelFalha" placeholder="Nome do responsável">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="responsavelResolucao">Responsável pela Resolução:</label>
+                        <input type="text" id="responsavelResolucao" placeholder="Nome do responsável">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">💾 Salvar Ocorrência</button>
+                        <button type="reset" class="btn-secondary">🔄 Limpar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Configurações -->
+        <div id="tab-config" class="tab-content">
+            <div class="form-container">
+                <h2>⚙️ Configurações do Supabase</h2>
+                <p class="info">Insira suas credenciais do Supabase abaixo:</p>
+                
+                <form id="configForm" onsubmit="saveConfig(event)">
+                    <div class="form-group">
+                        <label for="supabaseUrl">Supabase URL:</label>
+                        <input type="url" id="supabaseUrl" required placeholder="https://seu-projeto.supabase.co">
+                        <small>URL do seu projeto Supabase</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="supabaseKey">Supabase Anon Key:</label>
+                        <input type="text" id="supabaseKey" required placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                        <small>Chave pública (anon key) do Supabase</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">💾 Salvar Configurações</button>
+                        <button type="button" onclick="testConnection()" class="btn-secondary">🔌 Testar Conexão</button>
+                        <button type="button" onclick="loadConfig()" class="btn-secondary">📥 Carregar Salvas</button>
+                    </div>
+                </form>
+
+                <div id="testResult" class="test-result"></div>
+
+                <div class="database-info">
+                    <h3>📊 Estrutura do Banco de Dados</h3>
+                    <p>Execute este SQL no seu Supabase para criar as tabelas:</p>
+                    <pre><code>-- Tabela de usuários
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela de ocorrências
+CREATE TABLE occurrences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    num_pedido VARCHAR(100) NOT NULL,
+    nota_fiscal VARCHAR(100),
+    transportadora VARCHAR(255) NOT NULL,
+    nome_cliente VARCHAR(255) NOT NULL,
+    ocorrencia TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    situacao TEXT,
+    responsavel_falha VARCHAR(255),
+    responsavel_resolucao VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    created_by UUID REFERENCES users(id)
+);
+
+-- Índices para melhor performance
+CREATE INDEX idx_occurrences_num_pedido ON occurrences(num_pedido);
+CREATE INDEX idx_occurrences_status ON occurrences(status);
+CREATE INDEX idx_occurrences_created_at ON occurrences(created_at DESC);
+
+-- Habilitar RLS (Row Level Security)
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+-- Política de acesso (todos podem ler/escrever após autenticação)
+CREATE POLICY "Usuários autenticados podem ver ocorrências"
+    ON occurrences FOR SELECT
+    USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Usuários autenticados podem criar ocorrências"
+    ON occurrences FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Usuários autenticados podem atualizar ocorrências"
+    ON occurrences FOR UPDATE
+    USING (auth.role() = 'authenticated');
+</code></pre>
+                    <button onclick="copySQL()" class="btn-secondary">📋 Copiar SQL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Detalhes da Ocorrência</h2>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button onclick="editOccurrence()" class="btn-primary">✏️ Editar</button>
+                <button onclick="deleteOccurrence()" class="btn-danger">🗑️ Excluir</button>
+                <button onclick="closeModal()" class="btn-secondary">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
