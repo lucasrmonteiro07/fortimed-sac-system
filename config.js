@@ -1,36 +1,16 @@
-// Configuração do Supabase
+// Configuração do Supabase - Configurações Fixas
 class Config {
     constructor() {
-        this.STORAGE_KEY = 'fortimed_supabase_config';
-        this.loadFromStorage();
-    }
-
-    loadFromStorage() {
-        const saved = localStorage.getItem(this.STORAGE_KEY);
-        if (saved) {
-            const config = JSON.parse(saved);
-            this.supabaseUrl = config.url;
-            this.supabaseKey = config.key;
-        }
-    }
-
-    save(url, key) {
-        this.supabaseUrl = url;
-        this.supabaseKey = key;
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-            url: url,
-            key: key
-        }));
+        // Configurações fixas do Supabase
+        this.supabaseUrl = 'https://iowfcilmbeynrfszqlhu.supabase.co';
+        this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvd2ZjaWxtYmV5bnJmc3pxbGh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTQ0MzgsImV4cCI6MjA3NTUzMDQzOH0.jhLS67YUFaJUf45Xc732I_oOopaNqpnHnFShJaRdPks';
     }
 
     isConfigured() {
-        return !!(this.supabaseUrl && this.supabaseKey);
+        return true; // Sempre configurado com as credenciais fixas
     }
 
     getClient() {
-        if (!this.isConfigured()) {
-            throw new Error('Supabase não configurado. Por favor, configure na aba Configurações.');
-        }
         return supabase.createClient(this.supabaseUrl, this.supabaseKey);
     }
 }
@@ -38,49 +18,29 @@ class Config {
 // Instância global de configuração
 const config = new Config();
 
-// Funções auxiliares para configuração
+// Funções auxiliares para configuração (mantidas para compatibilidade)
 async function saveConfig(event) {
     event.preventDefault();
-    
-    const url = document.getElementById('supabaseUrl').value.trim();
-    const key = document.getElementById('supabaseKey').value.trim();
-
-    if (!url || !key) {
-        showTestResult('Por favor, preencha todos os campos.', 'error');
-        return;
-    }
-
-    config.save(url, key);
-    showTestResult('✅ Configurações salvas com sucesso!', 'success');
+    // Configuração fixa - não precisa salvar
+    alert('✅ Sistema já configurado com credenciais fixas!');
 }
 
 function loadConfig() {
-    if (config.isConfigured()) {
+    // Configuração fixa - sempre carregada
+    if (document.getElementById('supabaseUrl')) {
         document.getElementById('supabaseUrl').value = config.supabaseUrl;
+    }
+    if (document.getElementById('supabaseKey')) {
         document.getElementById('supabaseKey').value = config.supabaseKey;
-        showTestResult('✅ Configurações carregadas!', 'success');
-    } else {
-        showTestResult('❌ Nenhuma configuração salva encontrada.', 'error');
     }
 }
 
 async function testConnection() {
     try {
-        const url = document.getElementById('supabaseUrl').value.trim();
-        const key = document.getElementById('supabaseKey').value.trim();
-
-        if (!url || !key) {
-            showTestResult('❌ Por favor, preencha todos os campos antes de testar.', 'error');
-            return;
-        }
-
         showTestResult('🔄 Testando conexão...', 'info');
 
-        // Criar cliente temporário para teste
-        const testClient = supabase.createClient(url, key);
-
-        // Testar conexão fazendo uma query simples (head=true não retorna linhas)
-        const { error } = await testClient
+        // Testar conexão com as credenciais fixas
+        const { error } = await config.getClient()
             .from('occurrences')
             .select('*', { count: 'exact', head: true });
 
@@ -110,16 +70,20 @@ async function testConnection() {
 
 function showTestResult(message, type) {
     const resultDiv = document.getElementById('testResult');
-    resultDiv.textContent = message;
-    resultDiv.className = `test-result ${type}`;
+    if (resultDiv) {
+        resultDiv.textContent = message;
+        resultDiv.className = `test-result ${type}`;
+    }
 }
 
 function copySQL() {
-    const sqlCode = document.querySelector('.database-info pre code').textContent;
-    navigator.clipboard.writeText(sqlCode).then(() => {
-        alert('✅ SQL copiado para a área de transferência!');
-    }).catch(err => {
-        console.error('Erro ao copiar:', err);
-        alert('❌ Erro ao copiar. Por favor, copie manualmente.');
-    });
+    const sqlCode = document.querySelector('.database-info pre code');
+    if (sqlCode) {
+        navigator.clipboard.writeText(sqlCode.textContent).then(() => {
+            alert('✅ SQL copiado para a área de transferência!');
+        }).catch(err => {
+            console.error('Erro ao copiar:', err);
+            alert('❌ Erro ao copiar. Por favor, copie manualmente.');
+        });
+    }
 }

@@ -18,19 +18,7 @@ class AuthManager {
 
         // Se não estiver na página de login e não estiver autenticado
         if (!this.isAuthenticated()) {
-            // Permitir acesso à página principal para configurar Supabase
-            // quando ainda não há configuração salva
-            try {
-                if (typeof config !== 'undefined' && !config.isConfigured()) {
-                    // Redireciona para a página dedicada de configurações
-                    window.location.href = 'config.html';
-                    return;
-                }
-            } catch (e) {
-                // Se por algum motivo 'config' não estiver disponível, seguir fluxo padrão
-            }
-
-            // Caso contrário, redirecionar para login
+            // Redirecionar para login
             window.location.href = 'login.html';
         } else {
             this.displayUserInfo();
@@ -101,10 +89,6 @@ async function handleLogin(event) {
     messageDiv.textContent = '🔄 Fazendo login...';
 
     try {
-        if (!config.isConfigured()) {
-            throw new Error('Sistema não configurado. Entre em contato com o administrador.');
-        }
-
         const client = config.getClient();
 
         // Autenticar com Supabase
@@ -166,8 +150,6 @@ async function handleLogin(event) {
         
         if (error.message.includes('Invalid login credentials')) {
             messageDiv.textContent = '❌ Email ou senha incorretos.';
-        } else if (error.message.includes('não configurado')) {
-            messageDiv.textContent = '❌ ' + error.message;
         } else {
             messageDiv.textContent = '❌ Erro ao fazer login: ' + error.message;
         }
@@ -201,10 +183,6 @@ async function handleRegister(event) {
     messageDiv.textContent = '🔄 Criando conta...';
 
     try {
-        if (!config.isConfigured()) {
-            throw new Error('Sistema não configurado. Entre em contato com o administrador.');
-        }
-
         const client = config.getClient();
 
         // Criar usuário no Supabase Auth

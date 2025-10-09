@@ -36,10 +36,6 @@ async function loadOccurrences() {
     tbody.innerHTML = '<tr><td colspan="6" class="loading">🔄 Carregando ocorrências...</td></tr>';
 
     try {
-        if (!config.isConfigured()) {
-            throw new Error('Configure o Supabase na aba Configurações.');
-        }
-
         const client = config.getClient();
         const { data, error } = await client
             .from('occurrences')
@@ -116,10 +112,6 @@ async function saveOccurrence(event) {
     };
 
     try {
-        if (!config.isConfigured()) {
-            throw new Error('Configure o Supabase na aba Configurações.');
-        }
-
         const client = config.getClient();
 
         // Garantir que há sessão autenticada do Supabase
@@ -361,11 +353,5 @@ function normalizeStatus(status) {
 
 // Carregar ocorrências ao iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    // Abrir aba de configurações caso requisitado pelo AuthManager
-    if (window.__openConfigOnLoad) {
-        const cfgTabBtn = document.querySelector('.tabs .tab[data-tab="config"]');
-        if (cfgTabBtn) cfgTabBtn.click();
-        return;
-    }
     loadOccurrences();
 });

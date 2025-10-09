@@ -263,6 +263,16 @@ tbody tr:hover {
     font-size: 12px;
 }
 
+/* Botão icônico compacto */
+.btn-icon {
+    padding: 8px 12px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Formulários */
 .form-container {
     background: var(--surface);
