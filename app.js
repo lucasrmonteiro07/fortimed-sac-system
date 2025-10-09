@@ -37,6 +37,13 @@ async function loadOccurrences() {
 
     try {
         const client = config.getClient();
+        
+        // Verificar se há sessão ativa
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+            throw new Error('Você precisa estar logado para ver as ocorrências.');
+        }
+        
         const { data, error } = await client
             .from('occurrences')
             .select('*')
@@ -378,5 +385,14 @@ function normalizeStatus(status) {
 
 // Carregar ocorrências ao iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    loadOccurrences();
+    // Verificar se está logado antes de carregar ocorrências
+    if (authManager.isAuthenticated()) {
+        loadOccurrences();
+    } else {
+        // Se não estiver logado, mostrar mensagem
+        const tbody = document.getElementById('occurrencesBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">🔐 Faça login para ver as ocorrências</td></tr>';
+        }
+    }
 });
