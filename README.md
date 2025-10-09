@@ -24,8 +24,8 @@ Edite o arquivo `config.js` e substitua:
 
 ## 👥 Usuários do Sistema
 
-- **Admin**: administrativo@fortimeddistribuidora.com.br (Compras@01)
-- **Vendas 01-06**: vendas01@fortimeddistribuidora.com.br até vendas06@fortimeddistribuidora.com.br
+- **👑 Admin**: administrativo@fortimeddistribuidora.com.br (Compras@01) - **Vê todos os chamados**
+- **👤 Vendas 01-06**: vendas01@fortimeddistribuidora.com.br até vendas06@fortimeddistribuidora.com.br - **Vê apenas seus chamados**
 
 ## 📁 Arquivos do Sistema
 
@@ -61,6 +61,13 @@ Se você já tem ocorrências duplicadas no sistema:
 1. Execute o arquivo `limpar-duplicatas.sql` no Supabase
 2. Isso manterá apenas a versão mais recente de cada ocorrência
 3. O problema de duplicação ao editar foi corrigido no código
+
+## 👑 Funcionalidade de Admin
+
+Para ativar a funcionalidade de admin (ver todos os chamados):
+1. Execute o arquivo `atualizar-admin.sql` no Supabase
+2. O usuário administrativo@fortimeddistribuidora.com.br poderá ver todos os chamados
+3. Usuários normais continuam vendo apenas seus próprios chamados
 
 ---
 

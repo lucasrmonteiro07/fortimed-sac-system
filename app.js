@@ -44,21 +44,32 @@ async function loadOccurrences() {
             throw new Error('Você precisa estar logado para ver as ocorrências.');
         }
         
+        // Verificar se é admin
+        const currentUser = authManager.getCurrentUser();
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        
+        // Consulta única - RLS permite tudo, filtramos no código
         const { data, error } = await client
             .from('occurrences')
-            .select('*')
-            .eq('created_by', session.user.id) // Filtrar apenas ocorrências do usuário logado
+            .select(`
+                *,
+                users!created_by(name)
+            `)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        currentOccurrences = data || [];
+        // Filtrar dados baseado no role do usuário
+        let filteredData = data || [];
+        
+        if (!isAdmin) {
+            // Usuário normal vê apenas suas próprias ocorrências
+            filteredData = data.filter(occ => occ.created_by === session.user.id);
+        }
+        
+        currentOccurrences = filteredData;
         displayOccurrences(currentOccurrences);
         
-        // Debug: verificar se selectedOccurrence ainda existe após carregar
-        if (selectedOccurrence) {
-            console.log('selectedOccurrence ainda existe após loadOccurrences:', selectedOccurrence);
-        }
 
     } catch (error) {
         console.error('Erro ao carregar ocorrências:', error);
@@ -69,25 +80,51 @@ async function loadOccurrences() {
 // Exibir ocorrências na tabela
 function displayOccurrences(occurrences) {
     const tbody = document.getElementById('occurrencesBody');
+    const currentUser = authManager.getCurrentUser();
+    const isAdmin = currentUser && currentUser.role === 'admin';
 
     if (occurrences.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="loading">📭 Nenhuma ocorrência encontrada.</td></tr>';
+        const colspan = isAdmin ? '7' : '6';
+        tbody.innerHTML = `<tr><td colspan="${colspan}" class="loading">📭 Nenhuma ocorrência encontrada.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = occurrences.map(occ => `
-        <tr onclick="showOccurrenceDetails('${occ.id}')">
-            <td><strong>${escapeHtml(occ.num_pedido)}</strong></td>
-            <td>${escapeHtml(occ.nome_cliente)}</td>
-            <td>${escapeHtml(occ.transportadora)}</td>
-            <td><span class="status-badge status-${normalizeStatus(occ.status)}">${escapeHtml(occ.status)}</span></td>
-            <td>${formatDate(occ.created_at)}</td>
-            <td>
-                <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm">✏️</button>
-                <button onclick="event.stopPropagation(); deleteOccurrenceById('${occ.id}')" class="btn-danger btn-sm">🗑️</button>
-            </td>
-        </tr>
-    `).join('');
+    // Buscar informações dos usuários se for admin
+    if (isAdmin) {
+        // Adicionar coluna de criado por para admin
+        const thead = document.querySelector('thead tr');
+        if (thead && !thead.querySelector('.criado-por-header')) {
+            thead.innerHTML = `
+                <th>Nº Pedido</th>
+                <th>Cliente</th>
+                <th>Transportadora</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th class="criado-por-header">Criado por</th>
+                <th>Ações</th>
+            `;
+        }
+    }
+
+    tbody.innerHTML = occurrences.map(occ => {
+        const createdByInfo = isAdmin ? 
+            `<td class="criado-por">${escapeHtml(occ.users?.name || 'Usuário')}</td>` : '';
+        
+        return `
+            <tr onclick="showOccurrenceDetails('${occ.id}')">
+                <td><strong>${escapeHtml(occ.num_pedido)}</strong></td>
+                <td>${escapeHtml(occ.nome_cliente)}</td>
+                <td>${escapeHtml(occ.transportadora)}</td>
+                <td><span class="status-badge status-${normalizeStatus(occ.status)}">${escapeHtml(occ.status)}</span></td>
+                <td>${formatDate(occ.created_at)}</td>
+                ${createdByInfo}
+                <td>
+                    <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm">✏️</button>
+                    <button onclick="event.stopPropagation(); deleteOccurrenceById('${occ.id}')" class="btn-danger btn-sm">🗑️</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // Filtrar ocorrências
@@ -136,12 +173,9 @@ async function saveOccurrence(event) {
 
         // Verificar se está editando usando o campo hidden
         const occurrenceId = document.getElementById('occurrenceId').value;
-        console.log('ID da ocorrência (campo hidden):', occurrenceId);
-        console.log('Modo:', occurrenceId ? 'EDITAR' : 'CRIAR');
 
         if (occurrenceId) {
             // Atualizar ocorrência existente
-            console.log('Atualizando ocorrência ID:', occurrenceId);
             const { error } = await client
                 .from('occurrences')
                 .update({
@@ -156,7 +190,6 @@ async function saveOccurrence(event) {
             alert('✅ Ocorrência atualizada com sucesso!');
         } else {
             // Criar nova ocorrência
-            console.log('Criando nova ocorrência');
             const { error } = await client
                 .from('occurrences')
                 .insert([{ ...baseData, created_by: session.user.id }]);
@@ -282,16 +315,12 @@ function editOccurrence() {
 }
 
 function editOccurrenceById(id) {
-    console.log('editOccurrenceById chamado com ID:', id);
     const occurrence = currentOccurrences.find(occ => occ.id === id);
-    console.log('Ocorrência encontrada:', occurrence);
     
     if (occurrence) {
         selectedOccurrence = occurrence;
-        console.log('selectedOccurrence definido como:', selectedOccurrence);
         editOccurrence();
     } else {
-        console.error('Ocorrência não encontrada com ID:', id);
         alert('❌ Ocorrência não encontrada.');
     }
 }

@@ -47,7 +47,8 @@ class AuthManager {
             user: {
                 id: user.id,
                 email: user.email,
-                name: user.name
+                name: user.name,
+                role: user.role || 'user'
             },
             timestamp: Date.now()
         };
@@ -63,7 +64,9 @@ class AuthManager {
         if (session && session.user) {
             const userNameElement = document.getElementById('userName');
             if (userNameElement) {
-                userNameElement.textContent = `👤 ${session.user.name}`;
+                const roleIcon = session.user.role === 'admin' ? '👑' : '👤';
+                const roleText = session.user.role === 'admin' ? ' (Admin)' : '';
+                userNameElement.textContent = `${roleIcon} ${session.user.name}${roleText}`;
             }
         }
     }
@@ -113,6 +116,7 @@ async function handleLogin(event) {
         // Se não existir registro na tabela users, cria (upsert)
         if (!userData) {
             const defaultName = (data.user.user_metadata && data.user.user_metadata.full_name) || (email.split('@')[0]);
+            const defaultRole = email === 'administrativo@fortimeddistribuidora.com.br' ? 'admin' : 'user';
             const { error: upsertError } = await client
                 .from('users')
                 .upsert([
@@ -120,13 +124,13 @@ async function handleLogin(event) {
                         id: data.user.id,
                         email: email,
                         name: defaultName,
-                        password_hash: 'managed_by_supabase_auth'
+                        role: defaultRole
                     }
                 ], { onConflict: 'id' });
             if (upsertError && upsertError.code !== '23505') {
                 console.error('Erro ao criar registro na tabela users:', upsertError);
             } else {
-                userData = { id: data.user.id, email, name: defaultName };
+                userData = { id: data.user.id, email, name: defaultName, role: defaultRole };
             }
         }
 
@@ -134,7 +138,8 @@ async function handleLogin(event) {
         authManager.saveSession({
             id: data.user.id,
             email: data.user.email,
-            name: userData ? userData.name : email.split('@')[0]
+            name: userData ? userData.name : email.split('@')[0],
+            role: userData ? userData.role : 'user'
         });
 
         messageDiv.className = 'message success';
@@ -194,6 +199,7 @@ async function handleRegister(event) {
         if (error) throw error;
 
         // Inserir dados adicionais na tabela users
+        const defaultRole = email === 'administrativo@fortimeddistribuidora.com.br' ? 'admin' : 'user';
         const { error: insertError } = await client
             .from('users')
             .insert([
@@ -201,7 +207,7 @@ async function handleRegister(event) {
                     id: data.user.id,
                     email: email,
                     name: name,
-                    password_hash: 'managed_by_supabase_auth' // Placeholder, senha gerenciada pelo Auth
+                    role: defaultRole
                 }
             ]);
 
@@ -216,7 +222,8 @@ async function handleRegister(event) {
         authManager.saveSession({
             id: data.user.id,
             email: email,
-            name: name
+            name: name,
+            role: defaultRole
         });
 
         setTimeout(() => {

@@ -1,9 +1,9 @@
 -- ============================================================================
--- FORTIMED - CONFIGURAÇÃO SIMPLIFICADA DO BANCO DE DADOS
--- Execute este script no Supabase SQL Editor
+-- FORTIMED - ATUALIZAR SISTEMA PARA SUPORTE DE ADMIN
+-- Execute este script no Supabase SQL Editor para adicionar funcionalidade de admin
 -- ============================================================================
 
--- 1. Criar tabela de usuários para controle de roles
+-- 1. Criar tabela de usuários se não existir
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -12,27 +12,24 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- 2. Criar tabela de ocorrências
-CREATE TABLE IF NOT EXISTS occurrences (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    num_pedido VARCHAR(100) NOT NULL,
-    nota_fiscal VARCHAR(100),
-    transportadora VARCHAR(255) NOT NULL,
-    nome_cliente VARCHAR(255) NOT NULL,
-    ocorrencia TEXT NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    situacao TEXT,
-    responsavel_falha VARCHAR(255),
-    responsavel_resolucao VARCHAR(255),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    created_by UUID REFERENCES users(id)
-);
+-- 2. Atualizar tabela occurrences para ter foreign key
+ALTER TABLE occurrences 
+ADD COLUMN IF NOT EXISTS created_by_name VARCHAR(255);
 
--- 3. Habilitar RLS na tabela occurrences
-ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+-- Adicionar foreign key constraint se não existir
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'occurrences_created_by_fkey'
+    ) THEN
+        ALTER TABLE occurrences 
+        ADD CONSTRAINT occurrences_created_by_fkey 
+        FOREIGN KEY (created_by) REFERENCES users(id);
+    END IF;
+END $$;
 
--- 4. Remover todas as políticas existentes
+-- 3. Remover políticas antigas
 DROP POLICY IF EXISTS "Usuários veem apenas suas ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários podem criar ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários atualizam apenas suas ocorrências" ON occurrences;
@@ -45,22 +42,21 @@ DROP POLICY IF EXISTS "Permitir tudo para usuários autenticados" ON occurrences
 DROP POLICY IF EXISTS "Admin vê todas as ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários veem suas próprias ocorrências" ON occurrences;
 
--- 5. Criar políticas RLS com controle de admin
--- Admin pode ver todas as ocorrências
-CREATE POLICY "Admin vê todas as ocorrências"
+-- 4. Criar novas políticas com controle de admin
+-- Política única que permite admin ver tudo e usuários verem apenas suas próprias
+CREATE POLICY "Controle de acesso por role"
     ON occurrences FOR SELECT
     USING (
+        -- Admin pode ver tudo
         EXISTS (
             SELECT 1 FROM users 
             WHERE users.id = auth.uid() 
             AND users.role = 'admin'
         )
+        OR
+        -- Usuários normais veem apenas suas próprias
+        auth.uid() = created_by
     );
-
--- Usuários normais veem apenas suas próprias ocorrências
-CREATE POLICY "Usuários veem suas próprias ocorrências"
-    ON occurrences FOR SELECT
-    USING (auth.uid() = created_by);
 
 -- Todos podem criar ocorrências
 CREATE POLICY "Usuários podem criar ocorrências"
@@ -78,13 +74,7 @@ CREATE POLICY "Usuários deletam suas próprias ocorrências"
     ON occurrences FOR DELETE
     USING (auth.uid() = created_by);
 
--- 6. Criar índices básicos
-CREATE INDEX IF NOT EXISTS idx_occurrences_created_by ON occurrences(created_by);
-CREATE INDEX IF NOT EXISTS idx_occurrences_status ON occurrences(status);
-CREATE INDEX IF NOT EXISTS idx_occurrences_created_at ON occurrences(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-
--- 7. Inserir usuário administrativo
+-- 5. Inserir usuário administrativo
 INSERT INTO users (id, email, name, role) 
 VALUES (
     'e1b0416f-e883-42c9-8e67-30c974b5e392', 
@@ -93,5 +83,9 @@ VALUES (
     'admin'
 ) ON CONFLICT (id) DO UPDATE SET role = 'admin';
 
--- 8. Verificar se as tabelas foram criadas
-SELECT 'Tabelas criadas com sucesso!' as status;
+-- 6. Criar índices
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+CREATE INDEX IF NOT EXISTS idx_occurrences_created_by ON occurrences(created_by);
+
+-- 7. Verificar resultado
+SELECT 'Sistema atualizado com sucesso! Admin pode ver todos os chamados.' as status;
