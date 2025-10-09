@@ -37,3 +37,4 @@ VALUES (
 
 -- 4. Verificar se funcionou
 SELECT 'Correção aplicada! Admin deve conseguir ver todos os chamados.' as status;
+

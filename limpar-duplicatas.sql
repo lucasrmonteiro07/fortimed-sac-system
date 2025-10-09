@@ -44,3 +44,4 @@ ORDER BY total DESC;
 
 -- 4. Mostrar total de ocorrências
 SELECT COUNT(*) as total_ocorrencias FROM occurrences;
+

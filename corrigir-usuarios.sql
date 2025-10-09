@@ -30,3 +30,4 @@ SELECT id, num_pedido, created_by FROM occurrences LIMIT 5;
 
 -- 7. Verificar se tudo está correto
 SELECT 'Verificação concluída!' as status;
+

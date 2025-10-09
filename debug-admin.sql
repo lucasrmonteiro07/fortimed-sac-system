@@ -75,3 +75,4 @@ LEFT JOIN users u ON o.created_by = u.id
 WHERE u.id IS NULL;
 
 SELECT '=== DEBUG CONCLUÍDO ===' as info;
+

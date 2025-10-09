@@ -42,3 +42,4 @@ SELECT 'Políticas conflitantes removidas! Agora deve funcionar.' as status;
 SELECT policyname, cmd, qual 
 FROM pg_policies 
 WHERE tablename = 'occurrences';
+
