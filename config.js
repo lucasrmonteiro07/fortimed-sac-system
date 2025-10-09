@@ -78,11 +78,15 @@ async function testConnection() {
 
         // Criar cliente temporário para teste
         const testClient = supabase.createClient(url, key);
-        
-        // Testar conexão fazendo uma query simples
-        const { data, error } = await testClient.from('occurrences').select('count', { count: 'exact', head: true });
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 = tabela não existe (ok para teste)
+        // Testar conexão fazendo uma query simples (head=true não retorna linhas)
+        const { error } = await testClient
+            .from('occurrences')
+            .select('*', { count: 'exact', head: true });
+
+        // Se a tabela não existir ainda, considerar OK pois a conectividade foi validada
+        if (error && error.code !== 'PGRST116' && error.code !== '42P01') {
+            // PGRST116: relation not found (PostgREST), 42P01: undefined table (Postgres)
             throw error;
         }
 

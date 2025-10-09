@@ -3,15 +3,24 @@
 let currentOccurrences = [];
 let selectedOccurrence = null;
 
-// Navegação entre Tabs
-function showTab(tabName) {
+// Navegação entre Tabs (pode receber o botão ou o nome da aba)
+function showTab(tabOrName, maybeName) {
+    const tabName = typeof tabOrName === 'string' ? tabOrName : maybeName;
+    const clickedEl = typeof tabOrName === 'string' ? null : tabOrName;
+
     // Remover classe active de todas as tabs e conteúdos
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    // Adicionar classe active na tab e conteúdo selecionados
-    event.target.classList.add('active');
-    document.getElementById(`tab-${tabName}`).classList.add('active');
+    // Ativar a aba clicada ou localizar pelo nome
+    if (clickedEl) {
+        clickedEl.classList.add('active');
+    } else {
+        const btn = document.querySelector(`.tabs .tab[data-tab="${tabName}"]`);
+        if (btn) btn.classList.add('active');
+    }
+    const contentEl = document.getElementById(`tab-${tabName}`);
+    if (contentEl) contentEl.classList.add('active');
 
     // Carregar dados se necessário
     if (tabName === 'lista') {
@@ -138,13 +147,13 @@ async function saveOccurrence(event) {
             alert('✅ Ocorrência criada com sucesso!');
         }
 
-        // Limpar formulário
-        document.getElementById('occurrenceForm').reset();
-        selectedOccurrence = null;
+    // Limpar formulário
+    document.getElementById('occurrenceForm').reset();
+    selectedOccurrence = null;
 
-        // Voltar para a lista
-        showTab('lista');
-        document.querySelector('.tab').click();
+    // Voltar para a lista clicando na aba correspondente
+    const listTabBtn = document.querySelector('.tabs .tab[data-tab="lista"]');
+    if (listTabBtn) listTabBtn.click();
 
     } catch (error) {
         console.error('Erro ao salvar ocorrência:', error);
@@ -336,5 +345,11 @@ function normalizeStatus(status) {
 
 // Carregar ocorrências ao iniciar
 document.addEventListener('DOMContentLoaded', () => {
+    // Abrir aba de configurações caso requisitado pelo AuthManager
+    if (window.__openConfigOnLoad) {
+        const cfgTabBtn = document.querySelector('.tabs .tab[data-tab="config"]');
+        if (cfgTabBtn) cfgTabBtn.click();
+        return;
+    }
     loadOccurrences();
 });

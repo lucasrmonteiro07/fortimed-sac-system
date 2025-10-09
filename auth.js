@@ -16,8 +16,21 @@ class AuthManager {
             return;
         }
 
-        // Se não estiver na página de login e não estiver autenticado, redirecionar para login
+        // Se não estiver na página de login e não estiver autenticado
         if (!this.isAuthenticated()) {
+            // Permitir acesso à página principal para configurar Supabase
+            // quando ainda não há configuração salva
+            try {
+                if (typeof config !== 'undefined' && !config.isConfigured()) {
+                    // Sinaliza para abrir a aba de Configurações ao carregar a página
+                    window.__openConfigOnLoad = true;
+                    return; // não redireciona
+                }
+            } catch (e) {
+                // Se por algum motivo 'config' não estiver disponível, seguir fluxo padrão
+            }
+
+            // Caso contrário, redirecionar para login
             window.location.href = 'login.html';
         } else {
             this.displayUserInfo();

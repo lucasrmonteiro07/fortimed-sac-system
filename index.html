@@ -18,9 +18,9 @@
         </header>
 
         <nav class="tabs">
-            <button class="tab active" onclick="showTab('lista')">📋 Ocorrências</button>
-            <button class="tab" onclick="showTab('novo')">➕ Nova Ocorrência</button>
-            <button class="tab" onclick="showTab('config')">⚙️ Configurações</button>
+            <button class="tab active" data-tab="lista" onclick="showTab(this, 'lista')">📋 Ocorrências</button>
+            <button class="tab" data-tab="novo" onclick="showTab(this, 'novo')">➕ Nova Ocorrência</button>
+            <button class="tab" data-tab="config" onclick="showTab(this, 'config')">⚙️ Configurações</button>
         </nav>
 
         <!-- Tab: Lista de Ocorrências -->
