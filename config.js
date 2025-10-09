@@ -4,6 +4,7 @@ class Config {
         // Configurações fixas do Supabase
         this.supabaseUrl = 'https://iowfcilmbeynrfszqlhu.supabase.co';
         this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvd2ZjaWxtYmV5bnJmc3pxbGh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTQ0MzgsImV4cCI6MjA3NTUzMDQzOH0.jhLS67YUFaJUf45Xc732I_oOopaNqpnHnFShJaRdPks';
+        this._client = null; // Cache da instância do cliente
     }
 
     isConfigured() {
@@ -11,7 +12,11 @@ class Config {
     }
 
     getClient() {
-        return supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        // Usar singleton para evitar múltiplas instâncias
+        if (!this._client) {
+            this._client = supabase.createClient(this.supabaseUrl, this.supabaseKey);
+        }
+        return this._client;
     }
 }
 
