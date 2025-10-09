@@ -20,90 +20,13 @@
         <nav class="tabs">
             <button class="tab active" data-tab="lista" onclick="showTab(this, 'lista')">📋 Ocorrências</button>
             <button class="tab" data-tab="novo" onclick="showTab(this, 'novo')">➕ Nova Ocorrência</button>
-            <button class="tab" data-tab="config" onclick="showTab(this, 'config')">⚙️ Configurações</button>
         </nav>
-
-        <!-- Tab: Lista de Ocorrências -->
-        <div id="tab-lista" class="tab-content active">
-            <div class="filters">
-                <input type="text" id="searchOrder" placeholder="Buscar por Nº Pedido..." onkeyup="filterOccurrences()">
-                <select id="filterStatus" onchange="filterOccurrences()">
-                    <option value="">Todos Status</option>
-                    <option value="ABERTO">Aberto</option>
-                    <option value="EM ANDAMENTO">Em Andamento</option>
-                    <option value="RESOLVIDO">Resolvido</option>
-                    <option value="FECHADO">Fechado</option>
-                </select>
-                <button onclick="loadOccurrences()" class="btn-secondary">🔄 Atualizar</button>
-            </div>
-
-            <div class="table-container">
-                <table id="occurrencesTable">
-                    <thead>
-                        <tr>
-                            <th>Nº Pedido</th>
-                            <th>Cliente</th>
-                            <th>Transportadora</th>
-                            <th>Status</th>
-                            <th>Data</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="occurrencesBody">
-                        <tr>
-                            <td colspan="6" class="loading">Carregando ocorrências...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Link para Configurações separado -->
+        <div class="tab-content">
+            <div class="form-container" style="margin-top:20px; text-align:right;">
+                <a href="config.html" class="btn-secondary">⚙️ Abrir Configurações</a>
             </div>
         </div>
-
-        <!-- Tab: Nova Ocorrência -->
-        <div id="tab-novo" class="tab-content">
-            <div class="form-container">
-                <h2>Registrar Nova Ocorrência</h2>
-                <form id="occurrenceForm" onsubmit="saveOccurrence(event)">
-                    <div class="form-group">
-                        <label for="numPedido">Nº Pedido:</label>
-                        <input type="text" id="numPedido" required placeholder="Ex: NF 1535">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="notaFiscal">Nota Fiscal:</label>
-                        <input type="text" id="notaFiscal" placeholder="Número da Nota Fiscal">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="transportadora">Transportadora:</label>
-                        <input type="text" id="transportadora" required placeholder="Ex: EXPRESSO SÃO MIGUEL">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nomeCliente">Nome do Cliente:</label>
-                        <input type="text" id="nomeCliente" required placeholder="Ex: HOESP">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ocorrencia">Ocorrência:</label>
-                        <textarea id="ocorrencia" required rows="4" placeholder="Descreva a ocorrência..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="status">Status:</label>
-                        <select id="status" required>
-                            <option value="ABERTO">Aberto</option>
-                            <option value="EM ANDAMENTO">Em Andamento</option>
-                            <option value="RESOLVIDO">Resolvido</option>
-                            <option value="FECHADO">Fechado</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="situacao">Situação:</label>
-                        <textarea id="situacao" rows="3" placeholder="Situação atual..."></textarea>
-                    </div>
-
-                    <div class="form-group">
                         <label for="responsavelFalha">Responsável pela Falha:</label>
                         <input type="text" id="responsavelFalha" placeholder="Nome do responsável">
                     </div>

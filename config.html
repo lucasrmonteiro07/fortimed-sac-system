@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configurações - Fortimed</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚙️ Configurações do Supabase</h1>
+      <div class="user-info">
+        <a href="index.html" class="btn-secondary">⬅️ Voltar</a>
+      </div>
+    </header>
+
+    <div class="form-container">
+      <p class="info">Insira suas credenciais do Supabase abaixo:</p>
+      <form id="configForm" onsubmit="saveConfig(event)">
+        <div class="form-group">
+          <label for="supabaseUrl">Supabase URL:</label>
+          <input type="url" id="supabaseUrl" required placeholder="https://seu-projeto.supabase.co" />
+          <small>URL do seu projeto Supabase</small>
+        </div>
+        <div class="form-group">
+          <label for="supabaseKey">Supabase Anon Key:</label>
+          <input type="text" id="supabaseKey" required placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+          <small>Chave pública (anon key) do Supabase</small>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">💾 Salvar Configurações</button>
+          <button type="button" onclick="testConnection()" class="btn-secondary">🔌 Testar Conexão</button>
+          <button type="button" onclick="loadConfig()" class="btn-secondary">📥 Carregar Salvas</button>
+        </div>
+      </form>
+      <div id="testResult" class="test-result"></div>
+
+      <div class="database-info">
+        <h3>📊 Estrutura do Banco de Dados</h3>
+        <p>Execute este SQL no seu Supabase para criar as tabelas:</p>
+        <pre><code>-- Tabela de usuários
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela de ocorrências
+CREATE TABLE occurrences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    num_pedido VARCHAR(100) NOT NULL,
+    nota_fiscal VARCHAR(100),
+    transportadora VARCHAR(255) NOT NULL,
+    nome_cliente VARCHAR(255) NOT NULL,
+    ocorrencia TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    situacao TEXT,
+    responsavel_falha VARCHAR(255),
+    responsavel_resolucao VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    created_by UUID REFERENCES users(id)
+);
+
+-- Índices para melhor performance
+CREATE INDEX idx_occurrences_num_pedido ON occurrences(num_pedido);
+CREATE INDEX idx_occurrences_status ON occurrences(status);
+CREATE INDEX idx_occurrences_created_at ON occurrences(created_at DESC);
+
+-- Habilitar RLS (Row Level Security)
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+-- Política de acesso (todos podem ler/escrever após autenticação)
+CREATE POLICY "Usuários autenticados podem ver ocorrências"
+    ON occurrences FOR SELECT
+    USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Usuários autenticados podem criar ocorrências"
+    ON occurrences FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Usuários autenticados podem atualizar ocorrências"
+    ON occurrences FOR UPDATE
+    USING (auth.role() = 'authenticated');
+</code></pre>
+        <button onclick="copySQL()" class="btn-secondary">📋 Copiar SQL</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    // Se vier de um redirect por falta de configuração, dá destaque
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+    });
+  </script>
+</body>
+</html>

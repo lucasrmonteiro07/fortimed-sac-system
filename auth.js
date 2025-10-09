@@ -22,9 +22,9 @@ class AuthManager {
             // quando ainda não há configuração salva
             try {
                 if (typeof config !== 'undefined' && !config.isConfigured()) {
-                    // Sinaliza para abrir a aba de Configurações ao carregar a página
-                    window.__openConfigOnLoad = true;
-                    return; // não redireciona
+                    // Redireciona para a página dedicada de configurações
+                    window.location.href = 'config.html';
+                    return;
                 }
             } catch (e) {
                 // Se por algum motivo 'config' não estiver disponível, seguir fluxo padrão
@@ -116,7 +116,7 @@ async function handleLogin(event) {
         if (error) throw error;
 
         // Buscar dados adicionais do usuário
-        const { data: userData, error: userError } = await client
+        let { data: userData, error: userError } = await client
             .from('users')
             .select('*')
             .eq('email', email)
@@ -124,6 +124,26 @@ async function handleLogin(event) {
 
         if (userError && userError.code !== 'PGRST116') {
             console.error('Erro ao buscar dados do usuário:', userError);
+        }
+
+        // Se não existir registro na tabela users, cria (upsert)
+        if (!userData) {
+            const defaultName = (data.user.user_metadata && data.user.user_metadata.full_name) || (email.split('@')[0]);
+            const { error: upsertError } = await client
+                .from('users')
+                .upsert([
+                    {
+                        id: data.user.id,
+                        email: email,
+                        name: defaultName,
+                        password_hash: 'managed_by_supabase_auth'
+                    }
+                ], { onConflict: 'id' });
+            if (upsertError && upsertError.code !== '23505') {
+                console.error('Erro ao criar registro na tabela users:', upsertError);
+            } else {
+                userData = { id: data.user.id, email, name: defaultName };
+            }
         }
 
         // Salvar sessão

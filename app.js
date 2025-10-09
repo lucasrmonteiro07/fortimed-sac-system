@@ -103,7 +103,7 @@ function filterOccurrences() {
 async function saveOccurrence(event) {
     event.preventDefault();
 
-    const formData = {
+    const baseData = {
         num_pedido: document.getElementById('numPedido').value.trim(),
         nota_fiscal: document.getElementById('notaFiscal').value.trim() || null,
         transportadora: document.getElementById('transportadora').value.trim(),
@@ -112,8 +112,7 @@ async function saveOccurrence(event) {
         status: document.getElementById('status').value,
         situacao: document.getElementById('situacao').value.trim() || null,
         responsavel_falha: document.getElementById('responsavelFalha').value.trim() || null,
-        responsavel_resolucao: document.getElementById('responsavelResolucao').value.trim() || null,
-        created_by: authManager.getCurrentUser()?.id
+        responsavel_resolucao: document.getElementById('responsavelResolucao').value.trim() || null
     };
 
     try {
@@ -123,12 +122,19 @@ async function saveOccurrence(event) {
 
         const client = config.getClient();
 
+        // Garantir que há sessão autenticada do Supabase
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+            alert('❌ Você precisa estar logado para salvar. Faça login e tente novamente.');
+            return;
+        }
+
         if (selectedOccurrence) {
             // Atualizar ocorrência existente
             const { error } = await client
                 .from('occurrences')
                 .update({
-                    ...formData,
+                    ...baseData,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', selectedOccurrence.id);
@@ -140,7 +146,7 @@ async function saveOccurrence(event) {
             // Criar nova ocorrência
             const { error } = await client
                 .from('occurrences')
-                .insert([formData]);
+                .insert([{ ...baseData, created_by: session.user.id }]);
 
             if (error) throw error;
 
@@ -267,6 +273,11 @@ async function deleteOccurrence() {
 
     try {
         const client = config.getClient();
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+            alert('❌ Você precisa estar logado para excluir. Faça login e tente novamente.');
+            return;
+        }
         const { error } = await client
             .from('occurrences')
             .delete()
@@ -294,6 +305,11 @@ async function deleteOccurrenceById(id) {
 
     try {
         const client = config.getClient();
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+            alert('❌ Você precisa estar logado para excluir. Faça login e tente novamente.');
+            return;
+        }
         const { error } = await client
             .from('occurrences')
             .delete()
