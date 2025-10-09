@@ -16,10 +16,11 @@ Edite o arquivo `config.js` e substitua:
 - `supabaseUrl` pela URL do seu projeto
 - `supabaseKey` pela Anon Key do seu projeto
 
-### 3. Importar Usuários
-1. Abra `importar-usuarios.html` no navegador
-2. Clique em "🚀 Importar Usuários"
-3. Aguarde a criação dos usuários
+### 3. Testar Sistema
+1. Abra `index.html` no navegador
+2. Registre-se com seu email
+3. Crie uma ocorrência de teste
+4. Deve funcionar sem erros
 
 ## 👥 Usuários do Sistema
 
@@ -50,9 +51,16 @@ Edite o arquivo `config.js` e substitua:
 Após a configuração, o sistema estará funcionando com:
 - ✅ Login e registro de usuários
 - ✅ Criação de ocorrências
-- ✅ Edição e exclusão de ocorrências
+- ✅ Edição e exclusão de ocorrências (sem duplicação)
 - ✅ Filtros e busca
 - ✅ Controle de acesso por usuário
+
+## 🔧 Resolver Duplicação de Ocorrências
+
+Se você já tem ocorrências duplicadas no sistema:
+1. Execute o arquivo `limpar-duplicatas.sql` no Supabase
+2. Isso manterá apenas a versão mais recente de cada ocorrência
+3. O problema de duplicação ao editar foi corrigido no código
 
 ---
 

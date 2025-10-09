@@ -129,34 +129,8 @@ async function saveOccurrence(event) {
             return;
         }
 
-        // Verificar se o usuário existe na tabela users, se não existir, criar
-        try {
-            const { data: existingUser, error: checkError } = await client
-                .from('users')
-                .select('id')
-                .eq('id', session.user.id)
-                .single();
-
-            if (checkError && checkError.code === 'PGRST116') {
-                // Usuário não existe, criar
-                const { error: insertError } = await client
-                    .from('users')
-                    .insert([
-                        {
-                            id: session.user.id,
-                            email: session.user.email,
-                            name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-                            password_hash: 'managed_by_supabase_auth'
-                        }
-                    ]);
-
-                if (insertError) {
-                    console.warn('Erro ao criar usuário:', insertError);
-                }
-            }
-        } catch (error) {
-            console.warn('Erro ao verificar/criar usuário:', error);
-        }
+        // Não precisamos mais da tabela users - usar apenas o ID da sessão
+        // O sistema funcionará apenas com o auth.uid() do Supabase
 
         if (selectedOccurrence) {
             // Atualizar ocorrência existente (só se for do usuário logado)
@@ -183,9 +157,10 @@ async function saveOccurrence(event) {
             alert('✅ Ocorrência criada com sucesso!');
         }
 
-    // Limpar formulário
-    document.getElementById('occurrenceForm').reset();
-    selectedOccurrence = null;
+        // Limpar formulário e variáveis APÓS salvar
+        document.getElementById('occurrenceForm').reset();
+        document.getElementById('formTitle').textContent = '➕ Nova Ocorrência';
+        selectedOccurrence = null;
 
     // Voltar para a lista clicando na aba correspondente
     const listTabBtn = document.querySelector('.tabs .tab[data-tab="lista"]');
@@ -286,6 +261,9 @@ function editOccurrence() {
     document.getElementById('situacao').value = selectedOccurrence.situacao || '';
     document.getElementById('responsavelFalha').value = selectedOccurrence.responsavel_falha || '';
     document.getElementById('responsavelResolucao').value = selectedOccurrence.responsavel_resolucao || '';
+
+    // Atualizar título do formulário para mostrar que está editando
+    document.getElementById('formTitle').textContent = '✏️ Editar Ocorrência';
 
     // Fechar modal e ir para a tab de novo
     closeModal();

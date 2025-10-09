@@ -1,18 +1,9 @@
 -- ============================================================================
--- FORTIMED - CONFIGURAÇÃO SIMPLES DO BANCO DE DADOS
+-- FORTIMED - CONFIGURAÇÃO SIMPLIFICADA DO BANCO DE DADOS
 -- Execute este script no Supabase SQL Editor
 -- ============================================================================
 
--- 1. Criar tabela de usuários
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- 2. Criar tabela de ocorrências
+-- 1. Criar tabela de ocorrências (sem dependência da tabela users)
 CREATE TABLE IF NOT EXISTS occurrences (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     num_pedido VARCHAR(100) NOT NULL,
@@ -26,13 +17,13 @@ CREATE TABLE IF NOT EXISTS occurrences (
     responsavel_resolucao VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
-    created_by UUID REFERENCES users(id)
+    created_by UUID -- Referência direta ao auth.uid() do Supabase
 );
 
--- 3. Habilitar RLS na tabela occurrences
+-- 2. Habilitar RLS na tabela occurrences
 ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
 
--- 4. Remover todas as políticas existentes
+-- 3. Remover todas as políticas existentes
 DROP POLICY IF EXISTS "Usuários veem apenas suas ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários podem criar ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários atualizam apenas suas ocorrências" ON occurrences;
@@ -41,16 +32,17 @@ DROP POLICY IF EXISTS "Usuários autenticados podem ver ocorrências" ON occurre
 DROP POLICY IF EXISTS "Usuários autenticados podem criar ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários autenticados podem atualizar ocorrências" ON occurrences;
 DROP POLICY IF EXISTS "Usuários autenticados podem deletar ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Permitir tudo para usuários autenticados" ON occurrences;
 
--- 5. Criar políticas RLS simples
+-- 4. Criar políticas RLS simples
 CREATE POLICY "Permitir tudo para usuários autenticados"
     ON occurrences FOR ALL
     USING (auth.role() = 'authenticated');
 
--- 6. Criar índices básicos
+-- 5. Criar índices básicos
 CREATE INDEX IF NOT EXISTS idx_occurrences_created_by ON occurrences(created_by);
 CREATE INDEX IF NOT EXISTS idx_occurrences_status ON occurrences(status);
 CREATE INDEX IF NOT EXISTS idx_occurrences_created_at ON occurrences(created_at DESC);
 
--- 7. Verificar se as tabelas foram criadas
-SELECT 'Tabelas criadas com sucesso!' as status;
+-- 6. Verificar se a tabela foi criada
+SELECT 'Tabela de ocorrências criada com sucesso!' as status;
