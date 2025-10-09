@@ -54,6 +54,11 @@ async function loadOccurrences() {
 
         currentOccurrences = data || [];
         displayOccurrences(currentOccurrences);
+        
+        // Debug: verificar se selectedOccurrence ainda existe após carregar
+        if (selectedOccurrence) {
+            console.log('selectedOccurrence ainda existe após loadOccurrences:', selectedOccurrence);
+        }
 
     } catch (error) {
         console.error('Erro ao carregar ocorrências:', error);
@@ -129,25 +134,29 @@ async function saveOccurrence(event) {
             return;
         }
 
-        // Não precisamos mais da tabela users - usar apenas o ID da sessão
-        // O sistema funcionará apenas com o auth.uid() do Supabase
+        // Verificar se está editando usando o campo hidden
+        const occurrenceId = document.getElementById('occurrenceId').value;
+        console.log('ID da ocorrência (campo hidden):', occurrenceId);
+        console.log('Modo:', occurrenceId ? 'EDITAR' : 'CRIAR');
 
-        if (selectedOccurrence) {
-            // Atualizar ocorrência existente (só se for do usuário logado)
+        if (occurrenceId) {
+            // Atualizar ocorrência existente
+            console.log('Atualizando ocorrência ID:', occurrenceId);
             const { error } = await client
                 .from('occurrences')
                 .update({
                     ...baseData,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', selectedOccurrence.id)
-                .eq('created_by', session.user.id); // Garantir que só atualiza suas próprias ocorrências
+                .eq('id', occurrenceId)
+                .eq('created_by', session.user.id);
 
             if (error) throw error;
 
             alert('✅ Ocorrência atualizada com sucesso!');
         } else {
-            // Criar nova ocorrência (sempre associada ao usuário logado)
+            // Criar nova ocorrência
+            console.log('Criando nova ocorrência');
             const { error } = await client
                 .from('occurrences')
                 .insert([{ ...baseData, created_by: session.user.id }]);
@@ -159,6 +168,7 @@ async function saveOccurrence(event) {
 
         // Limpar formulário e variáveis APÓS salvar
         document.getElementById('occurrenceForm').reset();
+        document.getElementById('occurrenceId').value = ''; // Limpar campo hidden
         document.getElementById('formTitle').textContent = '➕ Nova Ocorrência';
         selectedOccurrence = null;
 
@@ -252,6 +262,7 @@ function editOccurrence() {
     }
 
     // Preencher formulário
+    document.getElementById('occurrenceId').value = selectedOccurrence.id; // Definir ID no campo hidden
     document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
     document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
     document.getElementById('transportadora').value = selectedOccurrence.transportadora;
@@ -271,10 +282,17 @@ function editOccurrence() {
 }
 
 function editOccurrenceById(id) {
+    console.log('editOccurrenceById chamado com ID:', id);
     const occurrence = currentOccurrences.find(occ => occ.id === id);
+    console.log('Ocorrência encontrada:', occurrence);
+    
     if (occurrence) {
         selectedOccurrence = occurrence;
+        console.log('selectedOccurrence definido como:', selectedOccurrence);
         editOccurrence();
+    } else {
+        console.error('Ocorrência não encontrada com ID:', id);
+        alert('❌ Ocorrência não encontrada.');
     }
 }
 

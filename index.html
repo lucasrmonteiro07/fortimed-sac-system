@@ -66,6 +66,9 @@
             <div class="form-container">
                 <h2 id="formTitle">➕ Nova Ocorrência</h2>
                 <form id="occurrenceForm" onsubmit="saveOccurrence(event)">
+                    <!-- Campo hidden para manter ID da ocorrência sendo editada -->
+                    <input type="hidden" id="occurrenceId" value="">
+                    
                     <div class="form-group">
                         <label for="numPedido">Nº Pedido *</label>
                         <input type="text" id="numPedido" required placeholder="Ex: NF 1535">
