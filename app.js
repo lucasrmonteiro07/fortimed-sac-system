@@ -130,19 +130,25 @@ async function saveOccurrence(event) {
         }
 
         // Garantir que o usuário existe na tabela users
-        const { error: userError } = await client
-            .from('users')
-            .upsert([
-                {
-                    id: session.user.id,
-                    email: session.user.email,
-                    name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-                    password_hash: 'managed_by_supabase_auth'
-                }
-            ], { onConflict: 'id' });
+        try {
+            const { error: userError } = await client
+                .from('users')
+                .upsert([
+                    {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                        password_hash: 'managed_by_supabase_auth'
+                    }
+                ], { onConflict: 'id' });
 
-        if (userError && userError.code !== '23505') {
-            console.error('Erro ao garantir usuário na tabela users:', userError);
+            if (userError) {
+                console.warn('Aviso ao garantir usuário na tabela users:', userError);
+                // Continuar mesmo com erro, pois pode ser que o usuário já existe
+            }
+        } catch (error) {
+            console.warn('Erro ao garantir usuário na tabela users:', error);
+            // Continuar mesmo com erro
         }
 
         if (selectedOccurrence) {
