@@ -230,8 +230,8 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                         <h4>⚙️ Filtros de Relatório (Opcional)</h4>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label for="reportStatus">Filtrar por Status:</label>
-                                <select id="reportStatus">
+                                <label for="filterStatus">Filtrar por Status:</label>
+                                <select id="filterStatus">
                                     <option value="">Todos os status</option>
                                     <option value="Aberto">Aberto</option>
                                     <option value="Em Análise">Em Análise</option>
@@ -257,7 +257,7 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                         </div>
                     </div>
 
-                    <div id="reportStatus" class="report-status"></div>
+                    <div id="reportStatusMessage" class="report-status"></div>
                 </div>
 
                 <!-- Informações Úteis -->
@@ -338,7 +338,7 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                 }
 
                 // Filtro 2: Status
-                const statusFilter = document.getElementById('reportStatus').value;
+                const statusFilter = document.getElementById('filterStatus').value;
                 if (statusFilter) {
                     filteredData = filteredData.filter(occ => occ.status === statusFilter);
                 }
@@ -377,7 +377,7 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
 
         // Mostrar status do relatório
         function showReportStatus(message, type) {
-            const statusDiv = document.getElementById('reportStatus');
+            const statusDiv = document.getElementById('reportStatusMessage');
             statusDiv.textContent = message;
             statusDiv.className = `report-status ${type}`;
         }
