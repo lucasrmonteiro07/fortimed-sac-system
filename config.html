@@ -498,16 +498,24 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                     theme: 'grid',
                     headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
                     bodyStyles: { textColor: [50, 50, 50] },
-                    alternateRowStyles: { fillColor: [245, 245, 245] }
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    didDrawPage: (data) => {
+                        // Rodapé em cada página
+                        const pageCount = doc.getNumberOfPages();
+                        const pageSize = doc.internal.pageSize;
+                        const pageHeight = pageSize.getHeight();
+                        const pageWidth = pageSize.getWidth();
+                        const currentPage = doc.internal.pages.length - 1;
+                        
+                        doc.setFontSize(8);
+                        doc.text(
+                            `Página ${currentPage} de ${pageCount}`,
+                            pageWidth - 20,
+                            pageHeight - 10,
+                            { align: 'right' }
+                        );
+                    }
                 });
-
-                // Rodapé
-                const pageCount = doc.internal.getPages().length;
-                for (let i = 1; i <= pageCount; i++) {
-                    doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.text(`Página ${i} de ${pageCount}`, 190, 10, { align: 'right' });
-                }
 
                 // Baixar
                 const timestamp = new Date().toISOString().slice(0, 10);
