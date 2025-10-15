@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Fortimed SAC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Configurações - Fortimed SAC</h1>
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button onclick="goBack()" class="btn-secondary">← Voltar</button>
+                <button onclick="logout()" class="btn-secondary">Sair</button>
+            </div>
+        </header>
+
+        <main class="config-page">
+            <div class="form-container">
+                <h2>⚙️ Configurações do Supabase</h2>
+                <p class="info">Credenciais do banco de dados (somente leitura - sistema pré-configurado)</p>
+                
+                <form id="configForm" onsubmit="saveConfig(event)">
+                    <div class="form-group">
+                        <label for="supabaseUrl">Supabase URL:</label>
+                        <input type="url" id="supabaseUrl" readonly placeholder="https://iowfcilmbeynrfszqlhu.supabase.co">
+                        <small>URL do projeto Supabase</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="supabaseKey">Supabase Anon Key:</label>
+                        <input type="password" id="supabaseKey" readonly placeholder="••••••••••••••••••">
+                        <small>Chave pública do Supabase (mascarada por segurança)</small>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" onclick="testConnection()" class="btn-primary">🔌 Testar Conexão</button>
+                        <button type="button" onclick="loadConfig()" class="btn-secondary">📥 Carregar Configurações</button>
+                        <button type="button" onclick="goBack()" class="btn-secondary">← Voltar</button>
+                    </div>
+                </form>
+
+                <div id="testResult" class="test-result"></div>
+
+                <!-- Seção de Informações do Banco -->
+                <div class="database-info">
+                    <h3>📊 Estrutura do Banco de Dados</h3>
+                    <p>Se você precisa recriar as tabelas, execute este SQL no seu Supabase SQL Editor:</p>
+                    
+                    <div class="sql-section">
+                        <h4>✅ Setup Recomendado (Executar no Supabase):</h4>
+                        <button onclick="copySetupSQL()" class="btn-secondary btn-sm">📋 Copiar Setup</button>
+                        <pre><code id="setupSQL">-- ============================================================================
+-- FORTIMED - CONFIGURAÇÃO SIMPLIFICADA DO BANCO DE DADOS
+-- Execute este script no Supabase SQL Editor
+-- ============================================================================
+
+-- 1. Criar tabela de usuários para controle de roles
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 2. Criar tabela de ocorrências
+CREATE TABLE IF NOT EXISTS occurrences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    num_pedido VARCHAR(100) NOT NULL,
+    nota_fiscal VARCHAR(100),
+    transportadora VARCHAR(255) NOT NULL,
+    nome_cliente VARCHAR(255) NOT NULL,
+    ocorrencia TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    situacao TEXT,
+    responsavel_falha VARCHAR(255),
+    responsavel_resolucao VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    created_by UUID REFERENCES users(id)
+);
+
+-- 3. Habilitar RLS na tabela occurrences
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+-- 4. Remover todas as políticas existentes
+DROP POLICY IF EXISTS "Usuários veem apenas suas ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários podem criar ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários atualizam apenas suas ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários deletam apenas suas ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Admin vê todas as ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários veem suas próprias ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Admin pode fazer qualquer coisa" ON occurrences;
+DROP POLICY IF EXISTS "Usuários autenticados podem ver ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários autenticados podem criar ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários autenticados podem atualizar ocorrências" ON occurrences;
+DROP POLICY IF EXISTS "Usuários autenticados podem deletar ocorrências" ON occurrences;
+
+-- 5. Criar políticas RLS com controle de admin
+-- Admin pode ver todas as ocorrências
+CREATE POLICY "Admin vê todas as ocorrências"
+    ON occurrences FOR SELECT
+    USING (
+        EXISTS(
+            SELECT 1 FROM users
+            WHERE users.id = auth.uid()
+            AND users.role = 'admin'
+        )
+    );
+
+-- Usuários normais veem apenas suas ocorrências
+CREATE POLICY "Usuários veem suas próprias ocorrências"
+    ON occurrences FOR SELECT
+    USING (created_by = auth.uid());
+
+-- Permitir inserção para usuários autenticados
+CREATE POLICY "Usuários autenticados podem criar ocorrências"
+    ON occurrences FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+-- Permitir atualização para admin ou criador
+CREATE POLICY "Usuários e admin podem atualizar ocorrências"
+    ON occurrences FOR UPDATE
+    USING (
+        created_by = auth.uid() OR
+        EXISTS(
+            SELECT 1 FROM users
+            WHERE users.id = auth.uid()
+            AND users.role = 'admin'
+        )
+    );
+
+-- Permitir deletação para admin ou criador
+CREATE POLICY "Usuários e admin podem deletar ocorrências"
+    ON occurrences FOR DELETE
+    USING (
+        created_by = auth.uid() OR
+        EXISTS(
+            SELECT 1 FROM users
+            WHERE users.id = auth.uid()
+            AND users.role = 'admin'
+        )
+    );
+
+-- 6. Criar índices para melhor performance
+CREATE INDEX IF NOT EXISTS idx_occurrences_num_pedido ON occurrences(num_pedido);
+CREATE INDEX IF NOT EXISTS idx_occurrences_status ON occurrences(status);
+CREATE INDEX IF NOT EXISTS idx_occurrences_created_at ON occurrences(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_occurrences_created_by ON occurrences(created_by);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- ============================================================================
+-- FORTIMED DATABASE SETUP COMPLETE ✅
+-- ============================================================================</code></pre>
+                    </div>
+
+                    <!-- Seção de Limpeza de Duplicatas -->
+                    <div class="sql-section">
+                        <h4>🧹 Limpar Duplicatas (se necessário):</h4>
+                        <button onclick="copyCleanupSQL()" class="btn-secondary btn-sm">📋 Copiar Limpeza</button>
+                        <pre><code id="cleanupSQL">-- Remove ocorrências duplicadas, mantendo apenas a mais recente
+DELETE FROM occurrences
+WHERE id NOT IN (
+    SELECT MAX(id) FROM occurrences
+    GROUP BY num_pedido, nome_cliente, transportadora
+);
+
+-- Verifica resultado
+SELECT COUNT(*) as total_occurrences FROM occurrences;</code></pre>
+                    </div>
+
+                    <!-- Seção de Admin -->
+                    <div class="sql-section">
+                        <h4>👑 Configurar Admin (se necessário):</h4>
+                        <button onclick="copyAdminSQL()" class="btn-secondary btn-sm">📋 Copiar Admin</button>
+                        <pre><code id="adminSQL">-- Atualizar um usuário para admin
+UPDATE users
+SET role = 'admin'
+WHERE email = 'administrativo@fortimeddistribuidora.com.br';
+
+-- Verificar usuários e roles
+SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</code></pre>
+                    </div>
+                </div>
+
+                <!-- Status do Sistema -->
+                <div class="system-status">
+                    <h3>🔍 Status do Sistema</h3>
+                    <div id="statusInfo" class="status-list">
+                        <p>Carregando informações...</p>
+                    </div>
+                </div>
+
+                <!-- Informações Úteis -->
+                <div class="helpful-info">
+                    <h3>ℹ️ Informações Úteis</h3>
+                    <ul>
+                        <li><strong>Usuários Padrão:</strong>
+                            <ul>
+                                <li>Admin: administrativo@fortimeddistribuidora.com.br (Compras@01)</li>
+                                <li>Vendas: vendas01@fortimeddistribuidora.com.br até vendas06@</li>
+                            </ul>
+                        </li>
+                        <li><strong>Funcionalidades:</strong>
+                            <ul>
+                                <li>Admin vê todos os chamados</li>
+                                <li>Usuários normais veem apenas seus chamados</li>
+                                <li>Criação, edição e exclusão de ocorrências</li>
+                                <li>Filtros e busca por número do pedido, cliente ou transportadora</li>
+                            </ul>
+                        </li>
+                        <li><strong>Documentação:</strong>
+                            <ul>
+                                <li>Solução Rápida: <code>SOLUCAO-RAPIDA.md</code></li>
+                                <li>Solução Admin: <code>SOLUCAO-ADMIN.md</code></li>
+                                <li>README Principal: <code>README.md</code></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Função para voltar
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Função para carregar configurações ao abrir a página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+            updateSystemStatus();
+        });
+
+        // Função para copiar SQL do setup
+        function copySetupSQL() {
+            const sqlCode = document.getElementById('setupSQL');
+            navigator.clipboard.writeText(sqlCode.textContent).then(() => {
+                alert('✅ SQL de setup copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Por favor, copie manualmente.');
+            });
+        }
+
+        // Função para copiar SQL de limpeza
+        function copyCleanupSQL() {
+            const sqlCode = document.getElementById('cleanupSQL');
+            navigator.clipboard.writeText(sqlCode.textContent).then(() => {
+                alert('✅ SQL de limpeza copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Por favor, copie manualmente.');
+            });
+        }
+
+        // Função para copiar SQL de admin
+        function copyAdminSQL() {
+            const sqlCode = document.getElementById('adminSQL');
+            navigator.clipboard.writeText(sqlCode.textContent).then(() => {
+                alert('✅ SQL de admin copiado para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                alert('❌ Erro ao copiar. Por favor, copie manualmente.');
+            });
+        }
+
+        // Função para atualizar status do sistema
+        async function updateSystemStatus() {
+            const statusInfo = document.getElementById('statusInfo');
+            try {
+                const client = config.getClient();
+                
+                // Testar conexão
+                const { error } = await client
+                    .from('occurrences')
+                    .select('count', { count: 'exact', head: true });
+                
+                let html = '<div class="status-item">';
+                if (!error) {
+                    html += '<span class="status-ok">✅</span> <strong>Conexão com Banco:</strong> OK';
+                } else {
+                    html += '<span class="status-error">❌</span> <strong>Conexão com Banco:</strong> Erro';
+                }
+                html += '</div>';
+
+                // Verificar autenticação
+                const { data: { session } } = await client.auth.getSession();
+                html += '<div class="status-item">';
+                if (session) {
+                    html += '<span class="status-ok">✅</span> <strong>Autenticação:</strong> OK (' + session.user.email + ')';
+                } else {
+                    html += '<span class="status-warning">⚠️</span> <strong>Autenticação:</strong> Não autenticado';
+                }
+                html += '</div>';
+
+                // Informações do usuário
+                const currentUser = authManager.getCurrentUser();
+                html += '<div class="status-item">';
+                if (currentUser) {
+                    const role = currentUser.role === 'admin' ? '👑 Admin' : '👤 Usuário';
+                    html += '<span class="status-ok">✅</span> <strong>Role:</strong> ' + role;
+                } else {
+                    html += '<span class="status-warning">⚠️</span> <strong>Role:</strong> Não definido';
+                }
+                html += '</div>';
+
+                statusInfo.innerHTML = html;
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                statusInfo.innerHTML = '<div class="status-item"><span class="status-error">❌</span> Erro ao carregar status</div>';
+            }
+        }
+    </script>
+</body>
+</html>

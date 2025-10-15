@@ -46,3 +46,7 @@ ORDER BY total DESC;
 SELECT COUNT(*) as total_ocorrencias FROM occurrences;
 
 
+
+
+
+

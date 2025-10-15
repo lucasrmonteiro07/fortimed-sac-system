@@ -636,6 +636,204 @@ tbody tr:hover {
     }
 }
 
+/* Página de Configurações */
+.config-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.form-container {
+    background: var(--surface);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.sql-section {
+    margin: 25px 0;
+    padding: 20px;
+    background: #f5f5f5;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 8px;
+}
+
+.sql-section h4 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sql-section pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 10px 0;
+}
+
+.sql-section code {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.database-info {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f0f9ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+}
+
+.database-info h3 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.database-info p {
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+}
+
+/* Status do Sistema */
+.system-status {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+}
+
+.system-status h3 {
+    color: var(--success-color);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border-left: 3px solid var(--success-color);
+}
+
+.status-ok {
+    font-size: 18px;
+    min-width: 25px;
+}
+
+.status-error {
+    font-size: 18px;
+    min-width: 25px;
+}
+
+.status-warning {
+    font-size: 18px;
+    min-width: 25px;
+    color: var(--warning-color);
+}
+
+/* Informações Úteis */
+.helpful-info {
+    margin: 30px 0;
+    padding: 20px;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+}
+
+.helpful-info h3 {
+    color: #92400e;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.helpful-info ul {
+    margin-left: 20px;
+    color: var(--text-secondary);
+}
+
+.helpful-info li {
+    margin-bottom: 10px;
+}
+
+.helpful-info strong {
+    color: var(--text-primary);
+}
+
+.helpful-info code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Botão pequeno */
+.btn-sm {
+    padding: 8px 12px;
+    font-size: 12px;
+    height: auto;
+}
+
+/* Info message */
+.info {
+    padding: 12px;
+    margin-bottom: 20px;
+    background: #dbeafe;
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+    color: #1e40af;
+}
+
+/* Test Result */
+.test-result {
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 6px;
+    display: none;
+}
+
+.test-result.info {
+    display: block;
+    background: #dbeafe;
+    border-left-color: var(--primary-color);
+    color: #1e40af;
+}
+
+.test-result.success {
+    display: block;
+    background: #dcfce7;
+    border-left: 4px solid var(--success-color);
+    color: #166534;
+}
+
+.test-result.error {
+    display: block;
+    background: #fee2e2;
+    border-left: 4px solid var(--danger-color);
+    color: #991b1b;
+}
+
 /* Scrollbar personalizada */
 ::-webkit-scrollbar {
     width: 10px;

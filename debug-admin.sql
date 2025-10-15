@@ -77,3 +77,7 @@ WHERE u.id IS NULL;
 SELECT '=== DEBUG CONCLUÍDO ===' as info;
 
 
+
+
+
+
