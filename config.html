@@ -6,6 +6,10 @@
     <title>Configurações - Fortimed SAC</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <!-- Bibliotecas para Relatórios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -394,20 +398,8 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                     return;
                 }
 
-                // Verificar se XLSX está disponível
-                if (typeof XLSX === 'undefined') {
-                    showReportStatus('📥 Iniciando download da biblioteca Excel...', 'loading');
-                    // Carregar biblioteca dynamicamente
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js';
-                    document.head.appendChild(script);
-                    
-                    script.onload = function() {
-                        executeExcelExport(data);
-                    };
-                } else {
-                    executeExcelExport(data);
-                }
+                // Executar exportação diretamente (biblioteca já carregada no HEAD)
+                executeExcelExport(data);
 
             } catch (error) {
                 console.error('Erro ao gerar Excel:', error);
@@ -466,31 +458,8 @@ SELECT id, email, name, role, created_at FROM users ORDER BY created_at DESC;</c
                     return;
                 }
 
-                // Carregar biblioteca PDF se necessária
-                if (typeof jsPDF === 'undefined') {
-                    showReportStatus('📥 Iniciando download da biblioteca PDF...', 'loading');
-                    
-                    // Carregar jsPDF
-                    const pdfScript = document.createElement('script');
-                    pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-                    document.head.appendChild(pdfScript);
-
-                    // Carregar autoTable para tabelas
-                    const tableScript = document.createElement('script');
-                    tableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
-                    document.head.appendChild(tableScript);
-
-                    pdfScript.onload = function() {
-                        if (typeof autoTable === 'undefined') {
-                            // Aguardar autoTable carregar
-                            setTimeout(() => executePDFExport(data), 500);
-                        } else {
-                            executePDFExport(data);
-                        }
-                    };
-                } else {
-                    executePDFExport(data);
-                }
+                // Executar exportação diretamente (bibliotecas já carregadas no HEAD)
+                executePDFExport(data);
 
             } catch (error) {
                 console.error('Erro ao gerar PDF:', error);
