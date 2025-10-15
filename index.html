@@ -10,16 +10,11 @@
 <body>
     <div class="container">
         <header>
-            <div class="header-content">
-                <div class="logo-container">
-                    <img src="img/logo.png" alt="Fortimed Logo" class="logo">
-                    <h1>🏥 Fortimed - Sistema de Ocorrências</h1>
-                </div>
-                <div class="user-info" id="userInfo">
-                    <span id="userName"></span>
-                    <button onclick="window.location.href='config.html'" class="btn-secondary btn-icon" aria-label="Configurações" title="Configurações" type="button">⚙️</button>
-                    <button onclick="logout()" class="btn-secondary">Sair</button>
-                </div>
+            <h1>🏥 Fortimed - Sistema de Ocorrências</h1>
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button onclick="window.location.href='config.html'" class="btn-secondary btn-icon" aria-label="Configurações" title="Configurações" type="button">⚙️</button>
+                <button onclick="logout()" class="btn-secondary">Sair</button>
             </div>
         </header>
 
@@ -27,14 +22,12 @@
             <button class="tab active" data-tab="lista" onclick="showTab(this, 'lista')">📋 Ocorrências</button>
             <button class="tab" data-tab="novo" onclick="showTab(this, 'novo')">➕ Nova Ocorrência</button>
         </nav>
-                        <label for="responsavelFalha">Responsável pela Falha:</label>
-                        <input type="text" id="responsavelFalha" placeholder="Nome do responsável">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="responsavelResolucao">Responsável pela Resolução:</label>
-                        <input type="text" id="responsavelResolucao" placeholder="Nome do responsável">
-                    </div>
+        <!-- Link para Configurações separado -->
+        <div class="tab-content">
+            <div class="form-container" style="margin-top:20px; text-align:right;">
+                <a href="config.html" class="btn-secondary">⚙️ Abrir Configurações</a>
+            </div>
+        </div>
 
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">💾 Salvar Ocorrência</button>
