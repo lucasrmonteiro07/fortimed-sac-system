@@ -220,6 +220,18 @@
         }
 
         // ========== FUNÇÕES DE PREVIEW ==========
+        
+        // Formatar status com emoji
+        function formatStatusBadge(status) {
+            const statusMap = {
+                'aberto': '🔴 Aberto',
+                'em_andamento': '🟡 Em Andamento',
+                'aguardando_transportadora': '🟣 Aguardando Transportadora',
+                'fechado': '🟢 Fechado'
+            };
+            return statusMap[status] || status;
+        }
+
         async function loadPreviewTable() {
             try {
                 const data = await loadReportData();
@@ -250,7 +262,7 @@
                         <td>${occ.nome_cliente || '-'}</td>
                         <td title="${occ.ocorrencia || ''}">${occ.ocorrencia ? (occ.ocorrencia.length > 20 ? occ.ocorrencia.substring(0, 20) + '...' : occ.ocorrencia) : '-'}</td>
                         <td>${occ.motivo || '-'}</td>
-                        <td><span class="status status-${occ.status}">${occ.status || '-'}</span></td>
+                        <td><span class="status status-${occ.status}">${formatStatusBadge(occ.status)}</span></td>
                         <td title="${occ.situacao || ''}">${occ.situacao ? (occ.situacao.length > 15 ? occ.situacao.substring(0, 15) + '...' : occ.situacao) : '-'}</td>
                         <td>${occ.responsavel_falha || '-'}</td>
                         <td>${occ.responsavel_resolucao || '-'}</td>

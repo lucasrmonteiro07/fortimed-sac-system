@@ -284,7 +284,7 @@ function displayOccurrences(occurrences) {
                 <td><strong>${escapeHtml(occ.num_pedido)}</strong></td>
                 <td>${escapeHtml(occ.nome_cliente)}</td>
                 <td>${escapeHtml(occ.transportadora)}</td>
-                <td><span class="status-badge status-${normalizeStatus(occ.status)}">${escapeHtml(occ.status)}</span></td>
+                <td><span class="status-badge status-${normalizeStatus(occ.status)}">${formatStatus(occ.status)}</span></td>
                 <td>${formatDate(occ.created_at)}</td>
                 ${createdByInfo}
                 <td>
@@ -441,7 +441,7 @@ function showOccurrenceDetails(id) {
         ` : ''}
         <div class="detail-item">
             <div class="detail-label">Status</div>
-            <div class="detail-value"><span class="status-badge status-${normalizeStatus(occurrence.status)}">${escapeHtml(occurrence.status)}</span></div>
+            <div class="detail-value"><span class="status-badge status-${normalizeStatus(occurrence.status)}">${formatStatus(occurrence.status)}</span></div>
         </div>
         ${occurrence.situacao ? `
         <div class="detail-item">
@@ -593,6 +593,17 @@ function formatDate(dateString) {
 function normalizeStatus(status) {
     if (!status) return '';
     return status.toLowerCase().replace(/\s+/g, '-');
+}
+
+// Formatar status com emoji e label legível
+function formatStatus(status) {
+    const statusMap = {
+        'aberto': '🔴 Aberto',
+        'em_andamento': '🟡 Em Andamento',
+        'aguardando_transportadora': '🟣 Aguardando Transportadora',
+        'fechado': '🟢 Fechado'
+    };
+    return statusMap[status] || status;
 }
 
 // Carregar ocorrências ao iniciar
