@@ -43,6 +43,14 @@ body {
     overflow: hidden;
 }
 
+/* Main Content */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 /* Header */
 header {
     background: var(--surface);
@@ -814,6 +822,11 @@ tbody tr:hover {
 .config-page {
     max-width: 1000px;
     margin: 0 auto;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-container {
