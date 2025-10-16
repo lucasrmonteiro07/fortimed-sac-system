@@ -2,6 +2,164 @@
 
 let currentOccurrences = [];
 let selectedOccurrence = null;
+let currentPage = 1;
+let pageSize = 25;
+let filteredOccurrences = [];
+let pendingDeleteId = null;
+
+// ========== TOAST NOTIFICATIONS ==========
+function showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ',
+        warning: '⚠'
+    };
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// ========== LOADING SPINNER ==========
+function showLoadingSpinner(text = 'Salvando ocorrência...') {
+    const spinner = document.getElementById('loadingSpinner');
+    document.getElementById('loadingText').textContent = text;
+    spinner.classList.add('show');
+}
+
+function hideLoadingSpinner() {
+    const spinner = document.getElementById('loadingSpinner');
+    spinner.classList.remove('show');
+}
+
+// ========== CONFIRMAÇÃO DE EXCLUSÃO ==========
+function showDeleteConfirmation(occurrenceId) {
+    pendingDeleteId = occurrenceId;
+    const modal = document.getElementById('confirmModal');
+    const overlay = document.getElementById('confirmModalOverlay');
+    modal.classList.add('show');
+    overlay.classList.add('show');
+}
+
+function cancelDelete() {
+    pendingDeleteId = null;
+    const modal = document.getElementById('confirmModal');
+    const overlay = document.getElementById('confirmModalOverlay');
+    modal.classList.remove('show');
+    overlay.classList.remove('show');
+}
+
+async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    
+    showLoadingSpinner('Deletando ocorrência...');
+    try {
+        const client = config.getClient();
+        const { data: { session } } = await client.auth.getSession();
+        
+        const { error } = await client
+            .from('occurrences')
+            .delete()
+            .eq('id', pendingDeleteId)
+            .eq('created_by', session.user.id);
+        
+        if (error) throw error;
+        
+        hideLoadingSpinner();
+        showToast('✓ Ocorrência deletada com sucesso!', 'success');
+        cancelDelete();
+        loadOccurrences();
+    } catch (error) {
+        hideLoadingSpinner();
+        showToast('✕ Erro ao deletar ocorrência: ' + error.message, 'error');
+    }
+}
+
+// ========== BUSCA EM TEMPO REAL ==========
+function searchOccurrences() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    
+    if (!searchTerm) {
+        filteredOccurrences = [...currentOccurrences];
+    } else {
+        filteredOccurrences = currentOccurrences.filter(occ => {
+            const num = String(occ.num_pedido).toLowerCase();
+            const cliente = (occ.nome_cliente || '').toLowerCase();
+            const transportadora = (occ.transportadora || '').toLowerCase();
+            
+            return num.includes(searchTerm) || 
+                   cliente.includes(searchTerm) || 
+                   transportadora.includes(searchTerm);
+        });
+    }
+    
+    currentPage = 1;
+    paginateOccurrences();
+}
+
+// ========== PAGINAÇÃO ==========
+function paginateOccurrences() {
+    if (filteredOccurrences.length === 0) {
+        displayOccurrences([]);
+        document.getElementById('paginationContainer').style.display = 'none';
+        return;
+    }
+    
+    const totalPages = Math.ceil(filteredOccurrences.length / pageSize);
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedData = filteredOccurrences.slice(start, end);
+    
+    displayOccurrences(paginatedData);
+    
+    // Atualizar controles de paginação
+    if (totalPages > 1) {
+        document.getElementById('paginationContainer').style.display = 'flex';
+        document.getElementById('currentPage').textContent = currentPage;
+        document.getElementById('totalPages').textContent = totalPages;
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+    } else {
+        document.getElementById('paginationContainer').style.display = 'none';
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        paginateOccurrences();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(filteredOccurrences.length / pageSize);
+    if (currentPage < totalPages) {
+        currentPage++;
+        paginateOccurrences();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function changePageSize() {
+    pageSize = parseInt(document.getElementById('pageSize').value);
+    currentPage = 1;
+    paginateOccurrences();
+}
 
 // Navegação entre Tabs (pode receber o botão ou o nome da aba)
 function showTab(tabOrName, maybeName) {
@@ -68,7 +226,10 @@ async function loadOccurrences() {
         }
         
         currentOccurrences = filteredData;
-        displayOccurrences(currentOccurrences);
+        filteredOccurrences = [...filteredData];
+        currentPage = 1;
+        document.getElementById('searchInput').value = '';
+        paginateOccurrences();
         
 
     } catch (error) {
@@ -161,13 +322,16 @@ async function saveOccurrence(event) {
         responsavel_resolucao: (document.getElementById('responsavelResolucao')?.value || '').trim() || null
     };
 
+    showLoadingSpinner('Salvando ocorrência...');
+
     try {
         const client = config.getClient();
 
         // Garantir que há sessão autenticada do Supabase
         const { data: { session } } = await client.auth.getSession();
         if (!session) {
-            alert('❌ Você precisa estar logado para salvar. Faça login e tente novamente.');
+            hideLoadingSpinner();
+            showToast('Você precisa estar logado para salvar', 'error');
             return;
         }
 
@@ -188,7 +352,8 @@ async function saveOccurrence(event) {
 
             if (error) throw error;
 
-            alert('✅ Ocorrência atualizada com sucesso!');
+            hideLoadingSpinner();
+            showToast('✓ Ocorrência atualizada com sucesso!', 'success');
         } else {
             // Criar nova ocorrência
             const { error } = await client
@@ -197,22 +362,25 @@ async function saveOccurrence(event) {
 
             if (error) throw error;
 
-            alert('✅ Ocorrência criada com sucesso!');
+            hideLoadingSpinner();
+            showToast('✓ Ocorrência criada com sucesso!', 'success');
         }
 
         // Limpar formulário e variáveis APÓS salvar
         document.getElementById('occurrenceForm').reset();
         if (occurrenceIdField) occurrenceIdField.value = ''; // Limpar campo hidden
-        document.getElementById('formTitle').textContent = '➕ Nova Ocorrência';
+        const formTitleElement = document.getElementById('formTitle');
+        if (formTitleElement) formTitleElement.textContent = '➕ Nova Ocorrência';
         selectedOccurrence = null;
 
-    // Voltar para a lista clicando na aba correspondente
-    const listTabBtn = document.querySelector('.tabs .tab[data-tab="lista"]');
-    if (listTabBtn) listTabBtn.click();
+        // Voltar para a lista clicando na aba correspondente
+        const listTabBtn = document.querySelector('.tabs .tab[data-tab="lista"]');
+        if (listTabBtn) listTabBtn.click();
 
     } catch (error) {
+        hideLoadingSpinner();
         console.error('Erro ao salvar ocorrência:', error);
-        alert('❌ Erro ao salvar: ' + error.message);
+        showToast('✕ Erro ao salvar: ' + error.message, 'error');
     }
 }
 
@@ -340,37 +508,12 @@ async function deleteOccurrence() {
     // Verificar se a ocorrência pertence ao usuário logado
     const currentUser = authManager.getCurrentUser();
     if (selectedOccurrence.created_by !== currentUser.id) {
-        alert('❌ Você só pode excluir suas próprias ocorrências.');
+        showToast('Você só pode excluir suas próprias ocorrências', 'error');
         return;
     }
 
-    if (!confirm('Tem certeza que deseja excluir esta ocorrência?')) {
-        return;
-    }
-
-    try {
-        const client = config.getClient();
-        const { data: { session } } = await client.auth.getSession();
-        if (!session) {
-            alert('❌ Você precisa estar logado para excluir. Faça login e tente novamente.');
-            return;
-        }
-        const { error } = await client
-            .from('occurrences')
-            .delete()
-            .eq('id', selectedOccurrence.id)
-            .eq('created_by', session.user.id); // Garantir que só exclui suas próprias ocorrências
-
-        if (error) throw error;
-
-        alert('✅ Ocorrência excluída com sucesso!');
-        closeModal();
-        loadOccurrences();
-
-    } catch (error) {
-        console.error('Erro ao excluir ocorrência:', error);
-        alert('❌ Erro ao excluir: ' + error.message);
-    }
+    // Mostrar modal de confirmação
+    showDeleteConfirmation(selectedOccurrence.id);
 }
 
 async function deleteOccurrenceById(id) {
@@ -380,36 +523,12 @@ async function deleteOccurrenceById(id) {
     // Verificar se a ocorrência pertence ao usuário logado
     const currentUser = authManager.getCurrentUser();
     if (occurrence.created_by !== currentUser.id) {
-        alert('❌ Você só pode excluir suas próprias ocorrências.');
+        showToast('Você só pode excluir suas próprias ocorrências', 'error');
         return;
     }
 
-    if (!confirm(`Tem certeza que deseja excluir a ocorrência ${occurrence.num_pedido}?`)) {
-        return;
-    }
-
-    try {
-        const client = config.getClient();
-        const { data: { session } } = await client.auth.getSession();
-        if (!session) {
-            alert('❌ Você precisa estar logado para excluir. Faça login e tente novamente.');
-            return;
-        }
-        const { error } = await client
-            .from('occurrences')
-            .delete()
-            .eq('id', id)
-            .eq('created_by', session.user.id); // Garantir que só exclui suas próprias ocorrências
-
-        if (error) throw error;
-
-        alert('✅ Ocorrência excluída com sucesso!');
-        loadOccurrences();
-
-    } catch (error) {
-        console.error('Erro ao excluir ocorrência:', error);
-        alert('❌ Erro ao excluir: ' + error.message);
-    }
+    // Mostrar modal de confirmação
+    showDeleteConfirmation(id);
 }
 
 // Fechar modal

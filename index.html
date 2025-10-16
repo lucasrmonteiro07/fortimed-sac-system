@@ -33,6 +33,14 @@
         <div id="tab-lista" class="tab-content active">
             <div class="form-container large-container">
                 <h2>📋 Ocorrências Cadastradas</h2>
+                
+                <!-- Search/Filter -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Buscar por pedido, cliente, transportadora..." onkeyup="searchOccurrences()">
+                    </div>
+                </div>
                 <div class="table-wrapper" style="overflow-x: auto; height: 70vh;">
                     <table class="occurrences-table">
                         <thead>
@@ -49,6 +57,21 @@
                             <tr><td colspan="6" class="loading">🔄 Carregando ocorrências...</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" id="paginationContainer" style="display:none;">
+                    <button class="pagination-button" onclick="previousPage()" id="prevBtn">← Anterior</button>
+                    <span class="pagination-info">
+                        Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                    </span>
+                    <button class="pagination-button" onclick="nextPage()" id="nextBtn">Próximo →</button>
+                    <select class="pagination-select" id="pageSize" onchange="changePageSize()">
+                        <option value="10">10 por página</option>
+                        <option value="25" selected>25 por página</option>
+                        <option value="50">50 por página</option>
+                        <option value="100">100 por página</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -109,6 +132,26 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+        <div class="loading-spinner-text" id="loadingText">Salvando ocorrência...</div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal Confirmação de Exclusão -->
+    <div class="modal-overlay" id="confirmModalOverlay"></div>
+    <div class="confirm-modal" id="confirmModal">
+        <h3>Confirmar Exclusão</h3>
+        <p>Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita.</p>
+        <div class="confirm-modal-actions">
+            <button class="btn-cancel" onclick="cancelDelete()">Cancelar</button>
+            <button class="btn-confirm" onclick="confirmDelete()">Excluir</button>
         </div>
     </div>
 
