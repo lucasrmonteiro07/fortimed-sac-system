@@ -48,7 +48,8 @@ main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -145,12 +146,15 @@ header {
     display: none;
     animation: fadeIn 0.3s;
     flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .tab-content.active {
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 @keyframes fadeIn {
@@ -338,8 +342,8 @@ tbody tr:hover {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .form-container.large-container {
@@ -348,6 +352,8 @@ tbody tr:hover {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
 }
 
