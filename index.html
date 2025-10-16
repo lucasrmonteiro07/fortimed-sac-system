@@ -33,21 +33,23 @@
         <div id="tab-lista" class="tab-content active">
             <div class="form-container">
                 <h2>📋 Ocorrências Cadastradas</h2>
-                <table class="occurrences-table">
-                    <thead>
-                        <tr>
-                            <th>Pedido</th>
-                            <th>Transportadora</th>
-                            <th>Cliente</th>
-                            <th>Status</th>
-                            <th>Data</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="occurrencesBody">
-                        <tr><td colspan="6" class="loading">🔄 Carregando ocorrências...</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-wrapper" style="overflow-x: auto;">
+                    <table class="occurrences-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Transportadora</th>
+                                <th>Cliente</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="occurrencesBody">
+                            <tr><td colspan="6" class="loading">🔄 Carregando ocorrências...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
