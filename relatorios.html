@@ -282,34 +282,77 @@
         function executePDFExport(data) {
             try {
                 const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
+                const doc = new jsPDF('l', 'mm', 'a4'); // Landscape para acomodar mais colunas
 
                 // Título
                 doc.setFontSize(16);
-                doc.text('Relatório de Chamados - Fortimed', 14, 15);
+                doc.text('Relatório de Ocorrências - Fortimed SAC', 14, 15);
 
-                // Data
+                // Data e total
                 doc.setFontSize(10);
                 doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, 14, 22);
                 doc.text(`Total de registros: ${data.length}`, 14, 28);
 
-                // Preparar dados para tabela
+                // Preparar dados para tabela com TODOS os campos
                 const tableData = data.map(occ => [
-                    occ.num_pedido,
-                    occ.transportadora,
-                    occ.nome_cliente,
-                    occ.status,
-                    new Date(occ.created_at).toLocaleDateString('pt-BR')
+                    occ.num_pedido || '-',
+                    occ.nota_fiscal || '-',
+                    occ.transportadora || '-',
+                    occ.nome_cliente || '-',
+                    occ.ocorrencia ? occ.ocorrencia.substring(0, 30) + '...' : '-',
+                    occ.motivo || '-',
+                    occ.status || '-',
+                    occ.situacao ? occ.situacao.substring(0, 20) + '...' : '-',
+                    occ.responsavel_falha || '-',
+                    occ.responsavel_resolucao || '-',
+                    new Date(occ.created_at).toLocaleDateString('pt-BR'),
+                    occ.updated_at ? new Date(occ.updated_at).toLocaleDateString('pt-BR') : '-'
                 ]);
 
-                // Tabela
+                // Tabela com todas as colunas
                 doc.autoTable({
-                    head: [['Nº Pedido', 'Transportadora', 'Cliente', 'Status', 'Data']],
+                    head: [[
+                        'Nº Pedido',
+                        'NF',
+                        'Transportadora',
+                        'Cliente',
+                        'Ocorrência',
+                        'Motivo',
+                        'Status',
+                        'Situação',
+                        'Resp. Falha',
+                        'Resp. Resolução',
+                        'Criado em',
+                        'Atualizado em'
+                    ]],
                     body: tableData,
                     startY: 35,
                     theme: 'grid',
-                    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
-                    bodyStyles: { textColor: [50, 50, 50] },
+                    headStyles: { 
+                        fillColor: [37, 99, 235], 
+                        textColor: [255, 255, 255],
+                        fontSize: 9,
+                        cellPadding: 3
+                    },
+                    bodyStyles: { 
+                        textColor: [50, 50, 50],
+                        fontSize: 8,
+                        cellPadding: 2
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 18 },  // Nº Pedido
+                        1: { cellWidth: 16 },  // NF
+                        2: { cellWidth: 22 },  // Transportadora
+                        3: { cellWidth: 20 },  // Cliente
+                        4: { cellWidth: 25 },  // Ocorrência
+                        5: { cellWidth: 18 },  // Motivo
+                        6: { cellWidth: 16 },  // Status
+                        7: { cellWidth: 18 },  // Situação
+                        8: { cellWidth: 16 },  // Resp. Falha
+                        9: { cellWidth: 18 },  // Resp. Resolução
+                        10: { cellWidth: 18 }, // Criado em
+                        11: { cellWidth: 18 }  // Atualizado em
+                    },
                     alternateRowStyles: { fillColor: [245, 245, 245] },
                     didDrawPage: (data) => {
                         // Rodapé em cada página
@@ -322,7 +365,7 @@
                         doc.setFontSize(8);
                         doc.text(
                             `Página ${currentPage} de ${pageCount}`,
-                            pageWidth - 20,
+                            pageWidth - 15,
                             pageHeight - 10,
                             { align: 'right' }
                         );
@@ -331,7 +374,7 @@
 
                 // Baixar
                 const timestamp = new Date().toISOString().slice(0, 10);
-                doc.save(`Relatorio_Chamados_${timestamp}.pdf`);
+                doc.save(`Relatorio_Ocorrencias_${timestamp}.pdf`);
 
                 showReportStatus(`✅ Relatório PDF gerado com sucesso! (${data.length} registros)`, 'success');
 
