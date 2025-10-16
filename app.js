@@ -324,6 +324,7 @@ async function saveOccurrence(event) {
         transportadora: document.getElementById('transportadora').value.trim(),
         nome_cliente: document.getElementById('nomeCliente').value.trim(),
         ocorrencia: document.getElementById('ocorrencia').value.trim(),
+        motivo: document.getElementById('motivo').value.trim() || null,
         status: document.getElementById('status').value,
         situacao: document.getElementById('situacao').value.trim() || null,
         responsavel_falha: (document.getElementById('responsavelFalha')?.value || '').trim() || null,
@@ -423,6 +424,12 @@ function showOccurrenceDetails(id) {
             <div class="detail-label">Ocorrência</div>
             <div class="detail-value">${escapeHtml(occurrence.ocorrencia)}</div>
         </div>
+        ${occurrence.motivo ? `
+        <div class="detail-item">
+            <div class="detail-label">Motivo</div>
+            <div class="detail-value">${escapeHtml(occurrence.motivo)}</div>
+        </div>
+        ` : ''}
         <div class="detail-item">
             <div class="detail-label">Status</div>
             <div class="detail-value"><span class="status-badge status-${normalizeStatus(occurrence.status)}">${escapeHtml(occurrence.status)}</span></div>
@@ -480,6 +487,7 @@ function editOccurrence() {
     document.getElementById('transportadora').value = selectedOccurrence.transportadora;
     document.getElementById('nomeCliente').value = selectedOccurrence.nome_cliente;
     document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
+    document.getElementById('motivo').value = selectedOccurrence.motivo || '';
     document.getElementById('status').value = selectedOccurrence.status;
     document.getElementById('situacao').value = selectedOccurrence.situacao || '';
     

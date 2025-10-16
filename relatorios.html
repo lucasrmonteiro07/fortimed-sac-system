@@ -73,7 +73,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="reportDateFrom">Data Inicial:</label>
+                            <label for="filterMotivo">Filtrar por Motivo:</label>
+                            <select id="filterMotivo">
+                                <option value="">Todos os motivos</option>
+                                <option value="cotacao_errada_comercial">Cotação feita errada pelo comercial</option>
+                                <option value="cotacao_errada_compras">Cotação feita errada pelo compras</option>
+                                <option value="validade_curta">Validade curta</option>
+                                <option value="divergencia_transportadora">Itens com divergência pela transportadora</option>
+                                <option value="envio_errado_logistica">Itens com envio errado pela logística</option>
+                            </select>
+                        </div>
                             <input type="date" id="reportDateFrom">
                         </div>
 
@@ -146,14 +155,20 @@
                     filteredData = filteredData.filter(occ => occ.status === statusFilter);
                 }
 
-                // Filtro 3: Data Inicial
+                // Filtro 3: Motivo
+                const motivoFilter = document.getElementById('filterMotivo').value;
+                if (motivoFilter) {
+                    filteredData = filteredData.filter(occ => occ.motivo === motivoFilter);
+                }
+
+                // Filtro 4: Data Inicial
                 const dateFrom = document.getElementById('reportDateFrom').value;
                 if (dateFrom) {
                     const fromDate = new Date(dateFrom);
                     filteredData = filteredData.filter(occ => new Date(occ.created_at) >= fromDate);
                 }
 
-                // Filtro 4: Data Final
+                // Filtro 5: Data Final
                 const dateTo = document.getElementById('reportDateTo').value;
                 if (dateTo) {
                     const toDate = new Date(dateTo);
@@ -161,7 +176,7 @@
                     filteredData = filteredData.filter(occ => new Date(occ.created_at) <= toDate);
                 }
 
-                // Filtro 5: Usuário
+                // Filtro 6: Usuário
                 const userFilter = document.getElementById('reportUser').value.toLowerCase();
                 if (userFilter) {
                     filteredData = filteredData.filter(occ => 
