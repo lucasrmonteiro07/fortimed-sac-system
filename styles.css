@@ -1060,7 +1060,6 @@ tbody tr:hover {
     width: 100%;
     border-collapse: collapse;
     background: var(--surface);
-    min-height: 400px;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -1074,10 +1073,10 @@ tbody tr:hover {
 }
 
 .occurrences-table th {
-    padding: 15px;
+    padding: 10px 12px;
     text-align: left;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: white;
@@ -1085,8 +1084,9 @@ tbody tr:hover {
 }
 
 .occurrences-table td {
-    padding: 12px 15px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
 }
 
 .occurrences-table .status {
