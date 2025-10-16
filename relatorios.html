@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Fortimed SAC</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <!-- Bibliotecas para Relatórios -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="img/logo.png" alt="Fortimed Logo" class="logo">
+                    <h1>📊 Relatórios - Fortimed SAC</h1>
+                </div>
+                <div class="user-info" id="userInfo">
+                    <span id="userName"></span>
+                    <button onclick="goBack()" class="btn-secondary">← Voltar</button>
+                    <button onclick="logout()" class="btn-secondary">Sair</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="config-page">
+            <div class="form-container">
+                <h2>📊 Geração de Relatórios</h2>
+                <p class="info">Exporte todos os chamados cadastrados em diferentes formatos:</p>
+                
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h4>📋 Relatório Excel</h4>
+                        <p>Exportar em formato .XLSX com todas as colunas</p>
+                        <button onclick="generateExcelReport()" class="btn-primary btn-full">📥 Baixar Excel</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h4>📄 Relatório PDF</h4>
+                        <p>Documento formatado em PDF pronto para impressão</p>
+                        <button onclick="generatePDFReport()" class="btn-primary btn-full">📥 Baixar PDF</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h4>📝 Relatório CSV</h4>
+                        <p>Arquivo CSV compatível com planilhas</p>
+                        <button onclick="generateCSVReport()" class="btn-primary btn-full">📥 Baixar CSV</button>
+                    </div>
+
+                    <div class="report-card">
+                        <h4>📊 Relatório JSON</h4>
+                        <p>Dados estruturados em formato JSON</p>
+                        <button onclick="generateJSONReport()" class="btn-primary btn-full">📥 Baixar JSON</button>
+                    </div>
+                </div>
+
+                <div class="report-filters">
+                    <h4>⚙️ Filtros de Relatório (Opcional)</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="filterStatus">Filtrar por Status:</label>
+                            <select id="filterStatus">
+                                <option value="">Todos os status</option>
+                                <option value="aberto">Aberto</option>
+                                <option value="em_andamento">Em Andamento</option>
+                                <option value="fechado">Fechado</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reportDateFrom">Data Inicial:</label>
+                            <input type="date" id="reportDateFrom">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reportDateTo">Data Final:</label>
+                            <input type="date" id="reportDateTo">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reportUser">Filtrar por Usuário:</label>
+                            <input type="text" id="reportUser" placeholder="Deixe vazio para todos">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportStatusMessage" class="report-status"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Função para voltar
+        function goBack() {
+            window.location.href = '/index.html';
+        }
+
+        // ============================================================================
+        // FUNÇÕES DE RELATÓRIO
+        // ============================================================================
+
+        // Carregar dados dos chamados com filtros
+        async function loadReportData() {
+            try {
+                const client = config.getClient();
+                
+                // Verificar autenticação
+                const { data: { session } } = await client.auth.getSession();
+                if (!session) {
+                    throw new Error('Você precisa estar logado para gerar relatórios');
+                }
+
+                // Verificar se é admin
+                const currentUser = authManager.getCurrentUser();
+                const isAdmin = currentUser && currentUser.role === 'admin';
+
+                // Buscar dados
+                const { data, error } = await client
+                    .from('occurrences')
+                    .select(`
+                        *,
+                        users!created_by(name)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Aplicar filtros
+                let filteredData = data || [];
+
+                // Filtro 1: Acesso (admin vs user)
+                if (!isAdmin) {
+                    filteredData = filteredData.filter(occ => occ.created_by === session.user.id);
+                }
+
+                // Filtro 2: Status
+                const statusFilter = document.getElementById('filterStatus').value;
+                if (statusFilter) {
+                    filteredData = filteredData.filter(occ => occ.status === statusFilter);
+                }
+
+                // Filtro 3: Data Inicial
+                const dateFrom = document.getElementById('reportDateFrom').value;
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    filteredData = filteredData.filter(occ => new Date(occ.created_at) >= fromDate);
+                }
+
+                // Filtro 4: Data Final
+                const dateTo = document.getElementById('reportDateTo').value;
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setHours(23, 59, 59);
+                    filteredData = filteredData.filter(occ => new Date(occ.created_at) <= toDate);
+                }
+
+                // Filtro 5: Usuário
+                const userFilter = document.getElementById('reportUser').value.toLowerCase();
+                if (userFilter) {
+                    filteredData = filteredData.filter(occ => 
+                        (occ.users?.name || '').toLowerCase().includes(userFilter)
+                    );
+                }
+
+                return filteredData;
+
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showReportStatus(`❌ Erro: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // Mostrar status do relatório
+        function showReportStatus(message, type) {
+            const statusDiv = document.getElementById('reportStatusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `report-status ${type}`;
+        }
+
+        // Gerar Relatório Excel
+        async function generateExcelReport() {
+            try {
+                showReportStatus('🔄 Gerando relatório Excel...', 'loading');
+                
+                const data = await loadReportData();
+
+                if (data.length === 0) {
+                    showReportStatus('⚠️ Nenhum dado encontrado para o relatório', 'error');
+                    return;
+                }
+
+                // Executar exportação diretamente (biblioteca já carregada no HEAD)
+                executeExcelExport(data);
+
+            } catch (error) {
+                console.error('Erro ao gerar Excel:', error);
+                showReportStatus(`❌ Erro ao gerar relatório: ${error.message}`, 'error');
+            }
+        }
+
+        function executeExcelExport(data) {
+            try {
+                // Preparar dados
+                const exportData = data.map(occ => ({
+                    'Nº Pedido': occ.num_pedido,
+                    'Nota Fiscal': occ.nota_fiscal || '-',
+                    'Transportadora': occ.transportadora,
+                    'Cliente': occ.nome_cliente,
+                    'Descrição': occ.ocorrencia,
+                    'Status': occ.status,
+                    'Situação': occ.situacao || '-',
+                    'Criado Por': occ.users?.name || 'Desconhecido',
+                    'Data': new Date(occ.created_at).toLocaleString('pt-BR')
+                }));
+
+                // Criar workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                
+                // Ajustar largura das colunas
+                const colWidths = [12, 14, 18, 18, 30, 12, 20, 18, 18];
+                ws['!cols'] = colWidths.map(w => ({ wch: w }));
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'Ocorrências');
+                
+                // Baixar arquivo
+                const timestamp = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `Relatorio_Chamados_${timestamp}.xlsx`);
+
+                showReportStatus(`✅ Relatório Excel gerado com sucesso! (${data.length} registros)`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao exportar Excel:', error);
+                showReportStatus(`❌ Erro ao exportar: ${error.message}`, 'error');
+            }
+        }
+
+        // Gerar Relatório PDF
+        async function generatePDFReport() {
+            try {
+                showReportStatus('🔄 Gerando relatório PDF...', 'loading');
+                
+                const data = await loadReportData();
+
+                if (data.length === 0) {
+                    showReportStatus('⚠️ Nenhum dado encontrado para o relatório', 'error');
+                    return;
+                }
+
+                // Executar exportação diretamente (bibliotecas já carregadas no HEAD)
+                executePDFExport(data);
+
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                showReportStatus(`❌ Erro ao gerar relatório: ${error.message}`, 'error');
+            }
+        }
+
+        function executePDFExport(data) {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Título
+                doc.setFontSize(16);
+                doc.text('Relatório de Chamados - Fortimed', 14, 15);
+
+                // Data
+                doc.setFontSize(10);
+                doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, 14, 22);
+                doc.text(`Total de registros: ${data.length}`, 14, 28);
+
+                // Preparar dados para tabela
+                const tableData = data.map(occ => [
+                    occ.num_pedido,
+                    occ.transportadora,
+                    occ.nome_cliente,
+                    occ.status,
+                    new Date(occ.created_at).toLocaleDateString('pt-BR')
+                ]);
+
+                // Tabela
+                doc.autoTable({
+                    head: [['Nº Pedido', 'Transportadora', 'Cliente', 'Status', 'Data']],
+                    body: tableData,
+                    startY: 35,
+                    theme: 'grid',
+                    headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255] },
+                    bodyStyles: { textColor: [50, 50, 50] },
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
+                    didDrawPage: (data) => {
+                        // Rodapé em cada página
+                        const pageCount = doc.getNumberOfPages();
+                        const pageSize = doc.internal.pageSize;
+                        const pageHeight = pageSize.getHeight();
+                        const pageWidth = pageSize.getWidth();
+                        const currentPage = doc.internal.pages.length - 1;
+                        
+                        doc.setFontSize(8);
+                        doc.text(
+                            `Página ${currentPage} de ${pageCount}`,
+                            pageWidth - 20,
+                            pageHeight - 10,
+                            { align: 'right' }
+                        );
+                    }
+                });
+
+                // Baixar
+                const timestamp = new Date().toISOString().slice(0, 10);
+                doc.save(`Relatorio_Chamados_${timestamp}.pdf`);
+
+                showReportStatus(`✅ Relatório PDF gerado com sucesso! (${data.length} registros)`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao exportar PDF:', error);
+                showReportStatus(`❌ Erro ao exportar: ${error.message}`, 'error');
+            }
+        }
+
+        // Gerar Relatório CSV
+        async function generateCSVReport() {
+            try {
+                showReportStatus('🔄 Gerando relatório CSV...', 'loading');
+                
+                const data = await loadReportData();
+
+                if (data.length === 0) {
+                    showReportStatus('⚠️ Nenhum dado encontrado para o relatório', 'error');
+                    return;
+                }
+
+                // Preparar dados
+                const headers = ['Nº Pedido', 'Nota Fiscal', 'Transportadora', 'Cliente', 'Descrição', 'Status', 'Situação', 'Criado Por', 'Data'];
+                const rows = data.map(occ => [
+                    escapeCSV(occ.num_pedido),
+                    escapeCSV(occ.nota_fiscal || '-'),
+                    escapeCSV(occ.transportadora),
+                    escapeCSV(occ.nome_cliente),
+                    escapeCSV(occ.ocorrencia),
+                    escapeCSV(occ.status),
+                    escapeCSV(occ.situacao || '-'),
+                    escapeCSV(occ.users?.name || 'Desconhecido'),
+                    new Date(occ.created_at).toLocaleString('pt-BR')
+                ]);
+
+                // Montar CSV
+                let csv = headers.join(',') + '\n';
+                csv += rows.map(row => row.join(',')).join('\n');
+
+                // Baixar
+                downloadFile(csv, 'text/csv', `Relatorio_Chamados_${new Date().toISOString().slice(0, 10)}.csv`);
+
+                showReportStatus(`✅ Relatório CSV gerado com sucesso! (${data.length} registros)`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao gerar CSV:', error);
+                showReportStatus(`❌ Erro ao gerar relatório: ${error.message}`, 'error');
+            }
+        }
+
+        // Gerar Relatório JSON
+        async function generateJSONReport() {
+            try {
+                showReportStatus('🔄 Gerando relatório JSON...', 'loading');
+                
+                const data = await loadReportData();
+
+                if (data.length === 0) {
+                    showReportStatus('⚠️ Nenhum dado encontrado para o relatório', 'error');
+                    return;
+                }
+
+                // Estruturar dados
+                const report = {
+                    titulo: 'Relatório de Chamados - Fortimed',
+                    dataGeracao: new Date().toLocaleString('pt-BR'),
+                    totalRegistros: data.length,
+                    chamados: data.map(occ => ({
+                        numeroPedido: occ.num_pedido,
+                        notaFiscal: occ.nota_fiscal || null,
+                        transportadora: occ.transportadora,
+                        cliente: occ.nome_cliente,
+                        descricao: occ.ocorrencia,
+                        status: occ.status,
+                        situacao: occ.situacao || null,
+                        criadoPor: occ.users?.name || 'Desconhecido',
+                        dataCriacao: new Date(occ.created_at).toISOString(),
+                        dataUltimaAlteracao: new Date(occ.updated_at).toISOString()
+                    }))
+                };
+
+                // Converter para JSON
+                const jsonString = JSON.stringify(report, null, 2);
+
+                // Baixar
+                downloadFile(jsonString, 'application/json', `Relatorio_Chamados_${new Date().toISOString().slice(0, 10)}.json`);
+
+                showReportStatus(`✅ Relatório JSON gerado com sucesso! (${data.length} registros)`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao gerar JSON:', error);
+                showReportStatus(`❌ Erro ao gerar relatório: ${error.message}`, 'error');
+            }
+        }
+
+        // Função auxiliar: escapar CSV
+        function escapeCSV(value) {
+            if (value === null || value === undefined) return '';
+            const stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                return '"' + stringValue.replace(/"/g, '""') + '"';
+            }
+            return stringValue;
+        }
+
+        // Função auxiliar: baixar arquivo
+        function downloadFile(content, mimeType, filename) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(content));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    </script>
+</body>
+</html>
