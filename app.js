@@ -350,14 +350,23 @@ async function saveOccurrence(event) {
 
         if (occurrenceId) {
             // Atualizar ocorrência existente
-            const { error } = await client
+            const currentUser = authManager.getCurrentUser();
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            
+            let updateQuery = client
                 .from('occurrences')
                 .update({
                     ...baseData,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', occurrenceId)
-                .eq('created_by', session.user.id);
+                .eq('id', occurrenceId);
+            
+            // Admin pode editar qualquer ocorrência, user só a sua
+            if (!isAdmin) {
+                updateQuery = updateQuery.eq('created_by', session.user.id);
+            }
+            
+            const { error } = await updateQuery;
 
             if (error) throw error;
 
@@ -471,9 +480,11 @@ function showOccurrenceDetails(id) {
 function editOccurrence() {
     if (!selectedOccurrence) return;
 
-    // Verificar se a ocorrência pertence ao usuário logado
+    // Verificar se a ocorrência pertence ao usuário logado ou se é admin
     const currentUser = authManager.getCurrentUser();
-    if (selectedOccurrence.created_by !== currentUser.id) {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    
+    if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
         alert('❌ Você só pode editar suas próprias ocorrências.');
         return;
     }
