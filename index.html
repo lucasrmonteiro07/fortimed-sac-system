@@ -12,7 +12,7 @@
         <header>
             <div class="header-content">
                 <div class="logo-container">
-                    <img src="img/logo.png" alt="Fortimed Logo" class="logo">
+                    <img src="/img/logo.png" alt="Fortimed Logo" class="logo" onerror="this.style.display='none'">
                     <h1>🏥 Fortimed - Sistema de Ocorrências</h1>
                 </div>
                 <div class="user-info" id="userInfo">
@@ -31,9 +31,9 @@
 
         <!-- Tab: Lista de Ocorrências -->
         <div id="tab-lista" class="tab-content active">
-            <div class="form-container">
+            <div class="form-container large-container">
                 <h2>📋 Ocorrências Cadastradas</h2>
-                <div class="table-wrapper" style="overflow-x: auto;">
+                <div class="table-wrapper" style="overflow-x: auto; height: 70vh;">
                     <table class="occurrences-table">
                         <thead>
                             <tr>
@@ -82,6 +82,11 @@
                         <label for="ocorrencia">Descrição da Ocorrência:</label>
                         <textarea id="ocorrencia" required placeholder="Descreva o problema..."></textarea>
                     </div>
+
+                    <!-- Campo hidden para ID de ocorrência (usado em edição) -->
+                    <input type="hidden" id="occurrenceId">
+                    <input type="hidden" id="responsavelFalha">
+                    <input type="hidden" id="responsavelResolucao">
 
                     <div class="form-group">
                         <label for="status">Status:</label>

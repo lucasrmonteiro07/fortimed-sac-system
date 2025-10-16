@@ -157,8 +157,8 @@ async function saveOccurrence(event) {
         ocorrencia: document.getElementById('ocorrencia').value.trim(),
         status: document.getElementById('status').value,
         situacao: document.getElementById('situacao').value.trim() || null,
-        responsavel_falha: document.getElementById('responsavelFalha').value.trim() || null,
-        responsavel_resolucao: document.getElementById('responsavelResolucao').value.trim() || null
+        responsavel_falha: (document.getElementById('responsavelFalha')?.value || '').trim() || null,
+        responsavel_resolucao: (document.getElementById('responsavelResolucao')?.value || '').trim() || null
     };
 
     try {
@@ -172,7 +172,8 @@ async function saveOccurrence(event) {
         }
 
         // Verificar se está editando usando o campo hidden
-        const occurrenceId = document.getElementById('occurrenceId').value;
+        const occurrenceIdField = document.getElementById('occurrenceId');
+        const occurrenceId = occurrenceIdField ? occurrenceIdField.value : '';
 
         if (occurrenceId) {
             // Atualizar ocorrência existente
@@ -201,7 +202,7 @@ async function saveOccurrence(event) {
 
         // Limpar formulário e variáveis APÓS salvar
         document.getElementById('occurrenceForm').reset();
-        document.getElementById('occurrenceId').value = ''; // Limpar campo hidden
+        if (occurrenceIdField) occurrenceIdField.value = ''; // Limpar campo hidden
         document.getElementById('formTitle').textContent = '➕ Nova Ocorrência';
         selectedOccurrence = null;
 
@@ -295,7 +296,9 @@ function editOccurrence() {
     }
 
     // Preencher formulário
-    document.getElementById('occurrenceId').value = selectedOccurrence.id; // Definir ID no campo hidden
+    const occurrenceIdField = document.getElementById('occurrenceId');
+    if (occurrenceIdField) occurrenceIdField.value = selectedOccurrence.id;
+    
     document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
     document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
     document.getElementById('transportadora').value = selectedOccurrence.transportadora;
@@ -303,11 +306,16 @@ function editOccurrence() {
     document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
     document.getElementById('status').value = selectedOccurrence.status;
     document.getElementById('situacao').value = selectedOccurrence.situacao || '';
-    document.getElementById('responsavelFalha').value = selectedOccurrence.responsavel_falha || '';
-    document.getElementById('responsavelResolucao').value = selectedOccurrence.responsavel_resolucao || '';
+    
+    const falhaField = document.getElementById('responsavelFalha');
+    if (falhaField) falhaField.value = selectedOccurrence.responsavel_falha || '';
+    
+    const resolucaoField = document.getElementById('responsavelResolucao');
+    if (resolucaoField) resolucaoField.value = selectedOccurrence.responsavel_resolucao || '';
 
     // Atualizar título do formulário para mostrar que está editando
-    document.getElementById('formTitle').textContent = '✏️ Editar Ocorrência';
+    const formTitleElement = document.getElementById('formTitle');
+    if (formTitleElement) formTitleElement.textContent = '✏️ Editar Ocorrência';
 
     // Fechar modal e ir para a tab de novo
     closeModal();
