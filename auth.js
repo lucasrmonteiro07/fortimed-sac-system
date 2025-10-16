@@ -7,11 +7,14 @@ class AuthManager {
     }
 
     checkAuth() {
-        // Se estiver na página de login, não redirecionar
-        if (window.location.pathname.includes('login.html')) {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const isLoginPage = currentPage.includes('login.html') || currentPage === '';
+        
+        // Se estiver na página de login
+        if (isLoginPage) {
             // Se já estiver logado, redirecionar para index
             if (this.isAuthenticated()) {
-                window.location.href = 'index.html';
+                window.location.href = '/index.html';
             }
             return;
         }
@@ -19,7 +22,7 @@ class AuthManager {
         // Se não estiver na página de login e não estiver autenticado
         if (!this.isAuthenticated()) {
             // Redirecionar para login
-            window.location.href = 'login.html';
+            window.location.href = '/login.html';
         } else {
             this.displayUserInfo();
         }
@@ -146,7 +149,7 @@ async function handleLogin(event) {
         messageDiv.textContent = '✅ Login realizado com sucesso!';
 
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         }, 1000);
 
     } catch (error) {
@@ -227,7 +230,7 @@ async function handleRegister(event) {
         });
 
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         }, 1500);
 
     } catch (error) {
@@ -259,6 +262,6 @@ function showLogin() {
 function logout() {
     if (confirm('Deseja realmente sair?')) {
         authManager.clearSession();
-        window.location.href = 'login.html';
+        window.location.href = '/login.html';
     }
 }
