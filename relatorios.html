@@ -60,7 +60,7 @@
 
                 <div class="report-filters">
                     <h4>⚙️ Filtros de Relatório (Opcional)</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
                         <div class="form-group">
                             <label for="filterStatus">Filtrar por Status:</label>
                             <select id="filterStatus">
@@ -83,6 +83,9 @@
                                 <option value="envio_errado_logistica">Itens com envio errado pela logística</option>
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <label for="reportDateFrom">Data Inicial:</label>
                             <input type="date" id="reportDateFrom">
                         </div>
 
@@ -99,6 +102,22 @@
                 </div>
 
                 <div id="reportStatusMessage" class="report-status"></div>
+
+                <!-- Preview da Tabela -->
+                <div style="display: flex; gap: 10px; margin: 20px 0;">
+                    <button onclick="loadPreviewTable()" class="btn-primary" style="flex: 1;">👁️ Visualizar Prévia</button>
+                    <button onclick="clearPreview()" class="btn-secondary" style="flex: 1;">🔄 Limpar Prévia</button>
+                </div>
+
+                <!-- Tabela de Preview -->
+                <div id="reportPreviewContainer" style="display: none;">
+                    <div style="overflow-x: auto; border: 1px solid #e9d5ff; border-radius: 8px; margin-top: 15px;">
+                        <table class="report-preview-table" id="reportPreviewTable">
+                            <thead id="previewTableHead"></thead>
+                            <tbody id="previewTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -198,6 +217,63 @@
             const statusDiv = document.getElementById('reportStatusMessage');
             statusDiv.textContent = message;
             statusDiv.className = `report-status ${type}`;
+        }
+
+        // ========== FUNÇÕES DE PREVIEW ==========
+        async function loadPreviewTable() {
+            try {
+                const data = await loadReportData();
+                
+                if (!data || data.length === 0) {
+                    showReportStatus('❌ Nenhum dado encontrado com os filtros aplicados', 'error');
+                    return;
+                }
+
+                // Headers
+                const headers = [
+                    'Nº Pedido', 'NF', 'Transportadora', 'Cliente', 
+                    'Ocorrência', 'Motivo', 'Status', 'Situação',
+                    'Resp. Falha', 'Resp. Resolução', 'Criado em', 'Atualizado em'
+                ];
+
+                // Montar header
+                const thead = document.getElementById('previewTableHead');
+                thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+                // Montar body
+                const tbody = document.getElementById('previewTableBody');
+                tbody.innerHTML = data.map(occ => `
+                    <tr>
+                        <td>${occ.num_pedido || '-'}</td>
+                        <td>${occ.nota_fiscal || '-'}</td>
+                        <td>${occ.transportadora || '-'}</td>
+                        <td>${occ.nome_cliente || '-'}</td>
+                        <td title="${occ.ocorrencia || ''}">${occ.ocorrencia ? (occ.ocorrencia.length > 20 ? occ.ocorrencia.substring(0, 20) + '...' : occ.ocorrencia) : '-'}</td>
+                        <td>${occ.motivo || '-'}</td>
+                        <td><span class="status status-${occ.status}">${occ.status || '-'}</span></td>
+                        <td title="${occ.situacao || ''}">${occ.situacao ? (occ.situacao.length > 15 ? occ.situacao.substring(0, 15) + '...' : occ.situacao) : '-'}</td>
+                        <td>${occ.responsavel_falha || '-'}</td>
+                        <td>${occ.responsavel_resolucao || '-'}</td>
+                        <td>${new Date(occ.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td>${occ.updated_at ? new Date(occ.updated_at).toLocaleDateString('pt-BR') : '-'}</td>
+                    </tr>
+                `).join('');
+
+                // Mostrar container
+                document.getElementById('reportPreviewContainer').style.display = 'block';
+                showReportStatus(`✅ Prévia carregada com ${data.length} registro(s)`, 'success');
+
+            } catch (error) {
+                console.error('Erro ao carregar prévia:', error);
+                showReportStatus(`❌ Erro ao carregar prévia: ${error.message}`, 'error');
+            }
+        }
+
+        function clearPreview() {
+            document.getElementById('reportPreviewContainer').style.display = 'none';
+            document.getElementById('previewTableHead').innerHTML = '';
+            document.getElementById('previewTableBody').innerHTML = '';
+            showReportStatus('✨ Prévia limpa', 'success');
         }
 
         // Gerar Relatório Excel

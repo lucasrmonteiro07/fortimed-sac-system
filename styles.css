@@ -798,6 +798,60 @@ tbody tr:hover {
     width: 100%;
 }
 
+/* ========== TABELA DE PREVIEW RELATÓRIO ========== */
+.report-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.report-preview-table thead {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.report-preview-table th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.report-preview-table th:last-child {
+    border-right: none;
+}
+
+.report-preview-table td {
+    padding: 10px;
+    border-bottom: 1px solid #f3e8ff;
+    font-size: 12px;
+    color: #374151;
+}
+
+.report-preview-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.report-preview-table tbody tr:hover {
+    background: #f9f5ff;
+}
+
+.report-preview-table tbody tr:nth-child(even) {
+    background: #faf5ff;
+}
+
+
 .report-filters input:focus,
 .report-filters select:focus {
     outline: none;
