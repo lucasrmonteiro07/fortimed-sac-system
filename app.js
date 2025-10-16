@@ -323,6 +323,7 @@ async function saveOccurrence(event) {
         nota_fiscal: document.getElementById('notaFiscal').value.trim() || null,
         transportadora: document.getElementById('transportadora').value.trim(),
         nome_cliente: document.getElementById('nomeCliente').value.trim(),
+        solicitante: document.getElementById('solicitante').value.trim() || null,
         ocorrencia: document.getElementById('ocorrencia').value.trim(),
         motivo: document.getElementById('motivo').value.trim() || null,
         status: document.getElementById('status').value,
@@ -429,6 +430,12 @@ function showOccurrenceDetails(id) {
             <div class="detail-label">Cliente</div>
             <div class="detail-value">${escapeHtml(occurrence.nome_cliente)}</div>
         </div>
+        ${occurrence.solicitante ? `
+        <div class="detail-item">
+            <div class="detail-label">Solicitante</div>
+            <div class="detail-value">${escapeHtml(occurrence.solicitante)}</div>
+        </div>
+        ` : ''}
         <div class="detail-item">
             <div class="detail-label">Ocorrência</div>
             <div class="detail-value">${escapeHtml(occurrence.ocorrencia)}</div>
@@ -497,6 +504,7 @@ function editOccurrence() {
     document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
     document.getElementById('transportadora').value = selectedOccurrence.transportadora;
     document.getElementById('nomeCliente').value = selectedOccurrence.nome_cliente;
+    document.getElementById('solicitante').value = selectedOccurrence.solicitante || '';
     document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
     document.getElementById('motivo').value = selectedOccurrence.motivo || '';
     document.getElementById('status').value = selectedOccurrence.status;
@@ -611,6 +619,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verificar se está logado antes de carregar ocorrências
     if (authManager.isAuthenticated()) {
         loadOccurrences();
+        // Preencher solicitante automaticamente
+        const currentUser = authManager.getCurrentUser();
+        if (currentUser) {
+            const solicitanteInput = document.getElementById('solicitante');
+            if (solicitanteInput) {
+                solicitanteInput.value = currentUser.name || currentUser.email || 'Usuário';
+            }
+        }
     } else {
         // Se não estiver logado, mostrar mensagem
         const tbody = document.getElementById('occurrencesBody');
