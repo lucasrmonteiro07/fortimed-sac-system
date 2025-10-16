@@ -1009,6 +1009,7 @@ tbody tr:hover {
     width: 100%;
     border-collapse: collapse;
     background: var(--surface);
+    min-height: 400px;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -1016,6 +1017,9 @@ tbody tr:hover {
 .occurrences-table thead {
     background: var(--primary-color);
     color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .occurrences-table th {
@@ -1025,6 +1029,8 @@ tbody tr:hover {
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    color: white;
+    white-space: nowrap;
 }
 
 .occurrences-table td {
@@ -1243,8 +1249,12 @@ tbody tr:hover {
 /* Tabela com scroll altura fixa */
 .table-wrapper {
     overflow-y: auto;
+    overflow-x: auto;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .occurrences-table {

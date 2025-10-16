@@ -9,6 +9,7 @@ class AuthManager {
     checkAuth() {
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         const isLoginPage = currentPage.includes('login.html') || currentPage === '';
+        const isConfigPage = currentPage.includes('config.html');
         
         // Se estiver na página de login
         if (isLoginPage) {
@@ -24,6 +25,15 @@ class AuthManager {
             // Redirecionar para login
             window.location.href = '/login.html';
         } else {
+            // Validar acesso à página de configuração (apenas admin)
+            if (isConfigPage) {
+                const currentUser = this.getCurrentUser();
+                if (!currentUser || currentUser.role !== 'admin') {
+                    alert('❌ Acesso negado! Apenas administradores podem acessar essa página.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+            }
             this.displayUserInfo();
         }
     }
