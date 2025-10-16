@@ -70,12 +70,20 @@ async function confirmDelete() {
     try {
         const client = config.getClient();
         const { data: { session } } = await client.auth.getSession();
+        const currentUser = authManager.getCurrentUser();
+        const isAdmin = currentUser && currentUser.role === 'admin';
         
-        const { error } = await client
+        // Admin pode deletar qualquer registro, user só seus próprios
+        let query = client
             .from('occurrences')
             .delete()
-            .eq('id', pendingDeleteId)
-            .eq('created_by', session.user.id);
+            .eq('id', pendingDeleteId);
+        
+        if (!isAdmin) {
+            query = query.eq('created_by', session.user.id);
+        }
+        
+        const { error } = await query;
         
         if (error) throw error;
         
@@ -505,9 +513,11 @@ function editOccurrenceById(id) {
 async function deleteOccurrence() {
     if (!selectedOccurrence) return;
 
-    // Verificar se a ocorrência pertence ao usuário logado
+    // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
     const currentUser = authManager.getCurrentUser();
-    if (selectedOccurrence.created_by !== currentUser.id) {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    
+    if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
         showToast('Você só pode excluir suas próprias ocorrências', 'error');
         return;
     }
@@ -520,9 +530,11 @@ async function deleteOccurrenceById(id) {
     const occurrence = currentOccurrences.find(occ => occ.id === id);
     if (!occurrence) return;
 
-    // Verificar se a ocorrência pertence ao usuário logado
+    // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
     const currentUser = authManager.getCurrentUser();
-    if (occurrence.created_by !== currentUser.id) {
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    
+    if (!isAdmin && occurrence.created_by !== currentUser.id) {
         showToast('Você só pode excluir suas próprias ocorrências', 'error');
         return;
     }
