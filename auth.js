@@ -137,11 +137,13 @@ async function handleLogin(event) {
                         id: data.user.id,
                         email: email,
                         name: defaultName,
-                        role: defaultRole
+                        role: defaultRole,
+                        password_hash: '' // Permitir NULL/vazio - senha gerenciada por Supabase Auth
                     }
                 ], { onConflict: 'id' });
-            if (upsertError && upsertError.code !== '23505') {
+            if (upsertError) {
                 console.error('Erro ao criar registro na tabela users:', upsertError);
+                // Mesmo com erro, continuar - o usuário está autenticado em auth.users
             } else {
                 userData = { id: data.user.id, email, name: defaultName, role: defaultRole };
             }
