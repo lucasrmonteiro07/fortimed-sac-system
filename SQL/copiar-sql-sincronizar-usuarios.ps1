@@ -2,12 +2,12 @@
 # Execute este arquivo PowerShell para copiar o SQL automaticamente
 
 $sql = @"
--- Sincronizar TODOS os usuários de auth.users para public.users
+-- Sincronizar TODOS os usuários de auth.users para public.users (CORRIGIDO)
 INSERT INTO public.users (id, email, name, role, password_hash)
 SELECT 
     au.id,
     au.email,
-    COALESCE(au.user_metadata->>'full_name', SPLIT_PART(au.email, '@', 1), 'Usuário'),
+    SPLIT_PART(au.email, '@', 1),
     CASE 
         WHEN au.email ILIKE '%admin%' THEN 'admin'
         WHEN au.email ILIKE '%administrativo%' THEN 'admin'
