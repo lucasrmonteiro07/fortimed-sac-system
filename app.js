@@ -289,7 +289,6 @@ function displayOccurrences(occurrences) {
                 ${createdByInfo}
                 <td>
                     <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm">✏️</button>
-                    <button onclick="event.stopPropagation(); deleteOccurrenceById('${occ.id}')" class="btn-danger btn-sm">🗑️</button>
                 </td>
             </tr>
         `;
@@ -536,39 +535,40 @@ function editOccurrenceById(id) {
     }
 }
 
-// Excluir ocorrência
-async function deleteOccurrence() {
-    if (!selectedOccurrence) return;
+// Excluir ocorrência - DESABILITADO (não permitido deletar ocorrências)
+// async function deleteOccurrence() {
+//     if (!selectedOccurrence) return;
 
-    // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
-    const currentUser = authManager.getCurrentUser();
-    const isAdmin = currentUser && currentUser.role === 'admin';
-    
-    if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
-        showToast('Você só pode excluir suas próprias ocorrências', 'error');
-        return;
-    }
+//     // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
+//     const currentUser = authManager.getCurrentUser();
+//     const isAdmin = currentUser && currentUser.role === 'admin';
+//     
+//     if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
+//         showToast('Você só pode excluir suas próprias ocorrências', 'error');
+//         return;
+//     }
 
-    // Mostrar modal de confirmação
-    showDeleteConfirmation(selectedOccurrence.id);
-}
+//     // Mostrar modal de confirmação
+//     showDeleteConfirmation(selectedOccurrence.id);
+// }
 
-async function deleteOccurrenceById(id) {
-    const occurrence = currentOccurrences.find(occ => occ.id === id);
-    if (!occurrence) return;
+// Excluir ocorrência por ID - DESABILITADO (não permitido deletar ocorrências)
+// async function deleteOccurrenceById(id) {
+//     const occurrence = currentOccurrences.find(occ => occ.id === id);
+//     if (!occurrence) return;
 
-    // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
-    const currentUser = authManager.getCurrentUser();
-    const isAdmin = currentUser && currentUser.role === 'admin';
-    
-    if (!isAdmin && occurrence.created_by !== currentUser.id) {
-        showToast('Você só pode excluir suas próprias ocorrências', 'error');
-        return;
-    }
+//     // Verificar permissão: admin pode deletar qualquer uma, user só sua própria
+//     const currentUser = authManager.getCurrentUser();
+//     const isAdmin = currentUser && currentUser.role === 'admin';
+//     
+//     if (!isAdmin && occurrence.created_by !== currentUser.id) {
+//         showToast('Você só pode excluir suas próprias ocorrências', 'error');
+//         return;
+//     }
 
-    // Mostrar modal de confirmação
-    showDeleteConfirmation(id);
-}
+//     // Mostrar modal de confirmação
+//     showDeleteConfirmation(id);
+// }
 
 // Fechar modal
 function closeModal() {

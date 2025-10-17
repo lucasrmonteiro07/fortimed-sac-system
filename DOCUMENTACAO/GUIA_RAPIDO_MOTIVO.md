@@ -1,50 +1,170 @@
-# 🚀 GUIA RÁPIDO: Adicionar Coluna `motivo` no Supabase
+✅ GUIA PRÁTICO - ADICIONAR TRANSPORTADORA E REMOVER DELETE
+═════════════════════════════════════════════════════════════════════════════════
 
-## 📋 Resumo do Problema
+🎯 2 ALTERAÇÕES PRINCIPAIS
+──────────────────────────
+1. ❌ Remover botão de DELETAR ocorrências
+2. ✅ Adicionar SELECT de TRANSPORTADORA
 
-Você está tentando salvar uma ocorrência com o novo campo "Motivo", mas o banco não reconhece a coluna. Solução rápida:
 
-## ⚡ 3 PASSOS RÁPIDOS
+═════════════════════════════════════════════════════════════════════════════════
 
-### PASSO 1️⃣: Abrir SQL Editor no Supabase
-```
-1. Va para: https://app.supabase.com/
-2. Faça login
-3. Selecione seu projeto
-4. Clique no menu → "SQL Editor"
-```
+## PASSO 1: ADICIONAR COLUNA NO BANCO DE DADOS
+═════════════════════════════════════════════════════════════════════════════════
 
-### PASSO 2️⃣: Colar o Comando
-Cole exatamente isto no editor SQL em branco:
+No Supabase SQL Editor, execute:
 
-```sql
-ALTER TABLE occurrences ADD COLUMN motivo TEXT NULL;
-```
+ALTER TABLE occurrences ADD COLUMN transportadora TEXT;
+CREATE INDEX idx_occurrences_transportadora ON occurrences(transportadora);
 
-### PASSO 3️⃣: Executar
-- Clique no botão ▶️ "Execute" (ou Ctrl + Enter)
-- Aguarde 2-3 segundos
-- Feche a aba do navegador
-- Reabra a aplicação (F5)
+Status esperado: "success" para ambos
 
-## ✅ Pronto!
 
-Agora você pode:
-- ✅ Salvar ocorrências com motivo
-- ✅ Editar motivo
-- ✅ Filtrar por motivo nos relatórios
-- ✅ Exportar com motivo em todos os formatos
+═════════════════════════════════════════════════════════════════════════════════
 
-## 🎯 Próximo Passo
+## PASSO 2: EDITAR O ARQUIVO index.html
+═════════════════════════════════════════════════════════════════════════════════
 
-Após executar o comando SQL:
-1. Volte para a aplicação
-2. Teste criando uma nova ocorrência
-3. Selecione um motivo e salve
-4. Pronto! ✨
+Abra: c:\Users\monteiro\Documents\GitHub\fortimed-sac-system\index.html
 
----
+BUSQUE POR:
+───────────
+Um <form> ou formulário que contém campos como:
+  • data
+  • status
+  • motivo
+  • descrição
 
-**Tempo Total**: ~1 minuto  
-**Dificuldade**: ⭐ Fácil  
-**Requer**: Acesso ao Supabase
+
+PROCURE E REMOVA/COMENTE o botão de DELETAR:
+
+Procure por algo como:
+  <button ... onclick="deleteOccurrence()">
+    Deletar
+  </button>
+
+OU
+
+  <button class="btn-delete">
+    ❌ Deletar
+  </button>
+
+E COMENTE assim:
+  <!--
+  <button ... onclick="deleteOccurrence()">
+    Deletar
+  </button>
+  -->
+
+
+ADICIONE o campo TRANSPORTADORA:
+
+No lugar que achar apropriado (perto de "motivo"), adicione:
+
+────────────────────────────────────────────────────────────────
+
+<div class="form-group">
+    <label for="transportadora">Transportadora:</label>
+    <select id="transportadora" name="transportadora" required>
+        <option value="">-- Selecione uma transportadora --</option>
+        <option value="São Miguel">São Miguel</option>
+        <option value="Leomar">Leomar</option>
+        <option value="LKW">LKW</option>
+        <option value="Fritz">Fritz</option>
+        <option value="Vapt Vupt">Vapt Vupt</option>
+        <option value="Multi">Multi</option>
+        <option value="Minuano">Minuano</option>
+        <option value="Garcias">Garcias</option>
+        <option value="Fortimed">Fortimed</option>
+        <option value="Outros">Outros</option>
+    </select>
+</div>
+
+────────────────────────────────────────────────────────────────
+
+Salve o arquivo.
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+## PASSO 3: EDITAR O ARQUIVO app.js
+═════════════════════════════════════════════════════════════════════════════════
+
+Abra: c:\Users\monteiro\Documents\GitHub\fortimed-sac-system\app.js
+
+PROCURE POR:
+─────────────
+A função que salva ocorrências. Algo como:
+
+  function saveOccurrence()
+  ou
+  async function submitOccurrence()
+  ou
+  function handleSaveOccurrence()
+
+
+DENTRO dessa função, procure por algo como:
+
+  const data = {
+    data: document.getElementById('data').value,
+    status: document.getElementById('status').value,
+    motivo: document.getElementById('motivo').value,
+    ...
+  };
+
+
+ADICIONE:
+
+  transportadora: document.getElementById('transportadora').value,
+
+Exemplo completo:
+
+  const data = {
+    data: document.getElementById('data').value,
+    status: document.getElementById('status').value,
+    motivo: document.getElementById('motivo').value,
+    transportadora: document.getElementById('transportadora').value,  ← ADICIONE ISTO
+    descricao: document.getElementById('descricao').value,
+    ...
+  };
+
+
+TAMBÉM PROCURE POR:
+────────────────────
+Função que CARREGA ocorrência para editar. Algo como:
+
+  function loadOccurrence(id)
+  ou
+  function editOccurrence(id)
+
+
+ADICIONE NELA:
+
+  document.getElementById('transportadora').value = ocurrence.transportadora || '';
+
+
+Isto garante que ao editar, o campo preencha com o valor anterior.
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+## PASSO 4: TESTE
+═════════════════════════════════════════════════════════════════════════════════
+
+1. Recarregue a página (Ctrl+Shift+R para hard refresh)
+2. Clique em criar nova ocorrência
+3. Deve aparecer campo "Transportadora" com opções
+4. Selecione uma opção (ex: "São Miguel")
+5. Salve a ocorrência
+6. Teste editar - deve manter a transportadora selecionada
+7. ✅ Pronto!
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+❓ PRECISA DE AJUDA?
+────────────────────
+
+Veja: DOCUMENTACAO/GUIA_MODIFICACOES_INTERFACE.md
+
+═════════════════════════════════════════════════════════════════════════════════

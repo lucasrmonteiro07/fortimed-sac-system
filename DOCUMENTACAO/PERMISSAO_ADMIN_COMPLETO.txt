@@ -1,0 +1,67 @@
+════════════════════════════════════════════════════════════════════════════
+✅ ANA PAULA VERÁ TODAS AS OCORRÊNCIAS - PRONTO PARA IMPLEMENTAR
+════════════════════════════════════════════════════════════════════════════
+
+📊 CONFIGURAÇÃO FINAL
+──────────────────────
+
+ANA PAULA (Admin):
+  ✅ Vê TODAS as ocorrências
+  ✅ Pode criar ocorrências
+  ✅ Pode editar ocorrências
+  ✅ Acesso total
+
+VENDEDORES (Users):
+  ✅ Veem APENAS suas ocorrências
+  ❌ Não veem outras
+  ✅ Podem criar suas próprias
+
+
+🚀 CÓDIGO PARA EXECUTAR (NO SUPABASE)
+───────────────────────────────────────
+
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY admin_can_view_all_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_view_own_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+CREATE POLICY admin_can_create_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_create_own_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+CREATE POLICY admin_can_update_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_update_own_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+
+📍 PASSOS
+─────────
+
+1. Abra: https://app.supabase.com/
+2. SQL Editor > New Query
+3. Cole o código acima (COMPLETO)
+4. Clique: Run
+5. Aguarde "success" múltiplas vezes
+6. Recarregue a página do sistema
+7. Teste o login
+
+
+════════════════════════════════════════════════════════════════════════════
+Referência: ADMIN_EDITAR_DELETAR_QUALQUER_OCORRENCIA.txt
+════════════════════════════════════════════════════════════════════════════

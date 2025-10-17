@@ -1,0 +1,112 @@
+✅ ANAPAULA VERÁ TODAS AS OCORRÊNCIAS
+═════════════════════════════════════════════════════════════════════════════════
+
+🎯 O QUE FAZER:
+─────────────────
+Configurar permissões de acesso para que Ana Paula (Admin) veja TODAS as 
+ocorrências do sistema, enquanto vendedores veem apenas as suas.
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🚀 PASSO A PASSO
+═════════════════════════════════════════════════════════════════════════════════
+
+PASSO 1: Abra o Supabase SQL Editor
+─────────────────────────────────────
+1. Acesse: https://app.supabase.com/
+2. Clique: SQL Editor
+3. Clique: New Query
+
+
+PASSO 2: Copie este SQL
+────────────────────────
+
+-- Ativar RLS
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+-- Política: Admin vê TODAS
+CREATE POLICY admin_can_view_all_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+-- Política: Usuários veem apenas suas
+CREATE POLICY users_can_view_own_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+-- Política: Admin pode criar
+CREATE POLICY admin_can_create_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+-- Política: Usuários criam apenas suas
+CREATE POLICY users_can_create_own_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+-- Política: Admin pode editar
+CREATE POLICY admin_can_update_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+-- Política: Usuários editam apenas suas
+CREATE POLICY users_can_update_own_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+
+PASSO 3: Colar e Executar
+──────────────────────────
+1. Cole TODO o SQL acima no editor
+2. Clique: "Run"
+3. Aguarde confirmação (deve dizer "success" múltiplas vezes)
+
+
+PASSO 4: Verificar se Funcionou
+─────────────────────────────────
+Execute esta query para confirmar:
+
+SELECT policyname, tablename 
+FROM pg_policies 
+WHERE tablename = 'occurrences';
+
+Deve retornar 6 políticas.
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+✅ RESULTADO FINAL:
+────────────────────
+
+📊 ANAPAULA (Admin):
+   ✅ Vê TODAS as ocorrências
+   ✅ Pode criar ocorrências
+   ✅ Pode editar ANY ocorrência
+   ✅ Acesso total ao sistema
+
+📊 VENDEDORES (Users):
+   ✅ Veem APENAS suas próprias ocorrências
+   ❌ Não veem outras ocorrências
+   ✅ Podem criar suas ocorrências
+   ✅ Podem editar apenas suas
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🧪 TESTE:
+──────────
+1. Faça login como Ana Paula
+2. Vá para "Relatórios" ou "Ocorrências"
+3. Deve ver TODAS as ocorrências do sistema
+4. Faça login como Vendedor
+5. Deve ver apenas suas próprias ocorrências
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+Arquivo completo: SQL/permitir-admin-ver-todas-ocorrencias.sql
+
+═════════════════════════════════════════════════════════════════════════════════

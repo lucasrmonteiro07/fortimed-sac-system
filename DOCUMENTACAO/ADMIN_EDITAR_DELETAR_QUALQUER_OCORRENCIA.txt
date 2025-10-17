@@ -1,0 +1,78 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║            ✅ PERMITIR ANA PAULA VER TODAS AS OCORRÊNCIAS                 ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🎯 O QUE VAI ACONTECER
+════════════════════════════════════════════════════════════════════════════
+
+ANTES:
+  • Ana Paula via apenas suas ocorrências
+  • Vendedores viam apenas suas ocorrências
+
+DEPOIS:
+  ✅ Ana Paula (Admin) vê TODAS as ocorrências
+  ✅ Vendedores continuam vendo apenas suas próprias
+
+
+🚀 EXECUTE ISTO NO SUPABASE SQL EDITOR
+════════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE occurrences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY admin_can_view_all_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_view_own_occurrences ON occurrences
+FOR SELECT
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+CREATE POLICY admin_can_create_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_create_own_occurrences ON occurrences
+FOR INSERT
+WITH CHECK ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+CREATE POLICY admin_can_update_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) = 'admin');
+
+CREATE POLICY users_can_update_own_occurrences ON occurrences
+FOR UPDATE
+USING ((SELECT role FROM public.users WHERE id = auth.uid()) != 'admin'
+  AND user_id = auth.uid());
+
+
+📍 COMO EXECUTAR
+════════════════════════════════════════════════════════════════════════════
+
+1. Abra: https://app.supabase.com/
+2. SQL Editor > New Query
+3. Cole TODO o SQL acima
+4. Clique: "Run"
+5. Aguarde múltiplos "success"
+6. Pronto! ✅
+
+
+✅ TESTE DEPOIS
+════════════════════════════════════════════════════════════════════════════
+
+Login como Ana Paula:
+  • Vá para Relatórios
+  • Deve ver TODAS as ocorrências
+
+Login como Vendedor:
+  • Vá para Relatórios
+  • Vê apenas suas ocorrências
+
+
+═════════════════════════════════════════════════════════════════════════════
+Arquivo completo: SQL/permitir-admin-ver-todas-ocorrencias.sql
+═════════════════════════════════════════════════════════════════════════════

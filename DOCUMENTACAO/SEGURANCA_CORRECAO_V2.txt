@@ -1,0 +1,63 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║        ⚠️ VENDAS01 VÊ APENAS SUAS OCORRÊNCIAS - SOLUÇÃO RÁPIDA           ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🔍 PROBLEMA
+════════════════════════════════════════════════════════════════════════════
+
+Alterou segurança, mas vendas01 AINDA vê apenas SUAS ocorrências.
+(Não vê ocorrências dos outros vendedores)
+
+
+✅ CAUSA + SOLUÇÃO
+════════════════════════════════════════════════════════════════════════════
+
+Causa: Políticas RLS antigas ainda ativas
+
+Solução: Remover as políticas + Desabilitar RLS
+
+
+🚀 EXECUTE ISTO (NO SUPABASE SQL EDITOR)
+════════════════════════════════════════════════════════════════════════════
+
+Copie E COLE EM SEQUÊNCIA:
+
+DROP POLICY IF EXISTS admin_can_view_all_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_view_own_occurrences ON occurrences;
+DROP POLICY IF EXISTS admin_can_create_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_create_own_occurrences ON occurrences;
+DROP POLICY IF EXISTS admin_can_update_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_update_own_occurrences ON occurrences;
+ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+
+📍 PASSOS
+════════════════════════════════════════════════════════════════════════════
+
+1. https://app.supabase.com/ → SQL Editor
+
+2. New Query
+
+3. Cole TUDO acima
+
+4. Clique "Run"
+
+5. Aguarde "success" múltiplas vezes
+
+6. Recarregue seu navegador (Ctrl+Shift+R)
+
+7. Faça logout e login novamente
+
+8. ✅ vendas01 deve ver TUDO agora!
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+Se ainda não funcionar → Problema pode estar no código JavaScript (app.js)
+
+Referência: CORRECAO_SEGURANCA.txt
+
+═════════════════════════════════════════════════════════════════════════════

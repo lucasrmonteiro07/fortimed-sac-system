@@ -1,0 +1,98 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              ✅ USUÁRIO CRIADO - AGORA FALTA FAZER ADMIN                  ║
+║                                                                            ║
+║                    Ana Paula - 17/10/2025                                ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+📊 STATUS ATUAL
+═══════════════════════════════════════════════════════════════════════════
+
+[✅] Usuário criado em auth.users (autenticação)
+[⏳] Falta: Adicionar à tabela public.users com role='admin'
+
+ID: 2e6d9014-8fdf-4e5a-b41f-ac7e2c2ea53f
+
+
+🎯 O QUE FAZER AGORA
+═══════════════════════════════════════════════════════════════════════════
+
+Execute este SQL no console do Supabase:
+
+
+  INSERT INTO public.users (
+      id,
+      email,
+      name,
+      role,
+      created_at,
+      updated_at
+  ) VALUES (
+      '2e6d9014-8fdf-4e5a-b41f-ac7e2c2ea53f',
+      'anapaula@fortimeddistribuidora.com.br',
+      'Ana Paula',
+      'admin',
+      NOW(),
+      NOW()
+  );
+
+
+🚀 PASSO A PASSO
+═══════════════════════════════════════════════════════════════════════════
+
+1. Acesse: https://app.supabase.com/
+
+2. Vá em: SQL Editor > New Query
+
+3. Cole o SQL acima
+
+4. Clique: "Run"
+
+5. Aguarde: 2-3 segundos
+
+6. Você verá: "✅ SUCCESS: 1 row(s) inserted"
+
+7. Pronto! Agora Ana Paula é admin!
+
+
+✅ VALIDAR
+═══════════════════════════════════════════════════════════════════════════
+
+Execute este SELECT para confirmar:
+
+  SELECT id, email, name, role FROM public.users
+  WHERE email = 'anapaula@fortimeddistribuidora.com.br';
+
+Esperado:
+  id     | 2e6d9014-8fdf-4e5a-b41f-ac7e2c2ea53f
+  email  | anapaula@fortimeddistribuidora.com.br
+  name   | Ana Paula
+  role   | admin ← DEVE SER 'admin'
+
+
+🔐 TESTAR LOGIN
+═══════════════════════════════════════════════════════════════════════════
+
+Email:    anapaula@fortimeddistribuidora.com.br
+Senha:    Compras@01
+URL:      http://seu-servidor/login.html
+
+Resultado esperado:
+  ✅ Login bem-sucedido
+  ✅ Vê "👑 Ana Paula (Admin)" no topo
+  ✅ Consegue acessar "⚙️ Configurações"
+
+
+📁 REFERÊNCIA
+═══════════════════════════════════════════════════════════════════════════
+
+SQL completo:    SQL/adicionar-anapaula-admin.sql
+Guia detalhado:  COMO_FAZER_ADMIN.txt
+Resumo:          Este arquivo
+
+
+════════════════════════════════════════════════════════════════════════════
+Basta executar o SQL acima e pronto! Ana Paula será admin do sistema.
+════════════════════════════════════════════════════════════════════════════

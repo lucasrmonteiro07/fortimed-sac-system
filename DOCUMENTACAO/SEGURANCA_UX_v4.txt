@@ -1,0 +1,72 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║           ✅ ALTERAR PERMISSÕES - ACESSO TOTAL A TUDO                     ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🎯 MUDANÇA
+════════════════════════════════════════════════════════════════════════════
+
+ANTES:
+  • Ana Paula via tudo
+  • Vendedores viam só suas ocorrências
+  • Havia restrições de acesso
+
+DEPOIS:
+  ✅ TODOS veem TODAS as ocorrências
+  ✅ TODOS podem editar qualquer ocorrência
+  ✅ Sem restrições
+  ✅ Acesso total
+
+
+🚀 CÓDIGO (COPIE EXATAMENTE ISTO)
+════════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+
+📍 COMO EXECUTAR
+════════════════════════════════════════════════════════════════════════════
+
+1. Acesse: https://app.supabase.com/
+
+2. SQL Editor > New Query
+
+3. Cole: ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+4. Clique: "Run"
+
+5. Aguarde: "success"
+
+6. Recarregue a página do sistema
+
+7. ✅ PRONTO!
+
+
+✅ RESULTADO
+════════════════════════════════════════════════════════════════════════════
+
+Ana Paula:      ✅ Vê tudo, pode editar tudo
+Vendedor 01:    ✅ Vê tudo, pode editar tudo
+Vendedor 02:    ✅ Vê tudo, pode editar tudo
+...todos:       ✅ Vê tudo, pode editar tudo
+
+Sem restrições!
+
+
+🧪 TESTE
+════════════════════════════════════════════════════════════════════════════
+
+1. Faça login como qualquer vendedor
+2. Vá para Relatórios
+3. Deve ver TODAS as ocorrências do sistema
+4. Pode editar/criar qualquer uma
+5. ✅ Funcionando!
+
+
+═════════════════════════════════════════════════════════════════════════════
+
+Arquivo completo: SQL/permitir-acesso-total-todas-ocorrencias.sql
+
+═════════════════════════════════════════════════════════════════════════════

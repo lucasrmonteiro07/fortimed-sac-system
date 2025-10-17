@@ -1,0 +1,258 @@
+════════════════════════════════════════════════════════════════════════════════
+  📋 DETALHES TÉCNICOS DAS MUDANÇAS
+════════════════════════════════════════════════════════════════════════════════
+
+
+📄 ARQUIVO: index.html
+════════════════════════════════════════════════════════════════════════════════
+
+🔄 MUDANÇA 1: Campo Transportadora (INPUT → SELECT)
+─────────────────────────────────────────────────────────────────────────────
+
+Localização: Linha ~65 (formulário de nova ocorrência)
+
+ANTES:
+    <div class="form-group">
+        <label for="transportadora">Transportadora:</label>
+        <input type="text" id="transportadora" required 
+               placeholder="Ex: Sedex, Transportadora XYZ">
+    </div>
+
+DEPOIS:
+    <div class="form-group">
+        <label for="transportadora">Transportadora:</label>
+        <select id="transportadora" name="transportadora" required>
+            <option value="">-- Selecione uma transportadora --</option>
+            <option value="São Miguel">São Miguel</option>
+            <option value="Leomar">Leomar</option>
+            <option value="LKW">LKW</option>
+            <option value="Fritz">Fritz</option>
+            <option value="Vapt Vupt">Vapt Vupt</option>
+            <option value="Multi">Multi</option>
+            <option value="Minuano">Minuano</option>
+            <option value="Garcias">Garcias</option>
+            <option value="Fortimed">Fortimed</option>
+            <option value="Outros">Outros</option>
+        </select>
+    </div>
+
+✨ Benefícios:
+   • Entrada padronizada (sem erros de digitação)
+   • Relatórios e filtros mais precisos
+   • Melhor consistência de dados
+
+
+🔄 MUDANÇA 2: Remover Botão Deletar do Modal
+─────────────────────────────────────────────────────────────────────────────
+
+Localização: Linha ~180 (modal-actions no modal de detalhes)
+
+ANTES:
+    <div class="modal-actions">
+        <button onclick="editOccurrence()" class="btn-primary">✏️ Editar</button>
+        <button onclick="deleteOccurrence()" class="btn-danger">🗑️ Excluir</button>
+        <button onclick="closeModal()" class="btn-secondary">Fechar</button>
+    </div>
+
+DEPOIS:
+    <div class="modal-actions">
+        <button onclick="editOccurrence()" class="btn-primary">✏️ Editar</button>
+        <button onclick="closeModal()" class="btn-secondary">Fechar</button>
+    </div>
+
+🚫 Impacto:
+   • Usuário não pode deletar ocorrências pelo modal
+   • Apenas edição permitida
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+📄 ARQUIVO: app.js
+════════════════════════════════════════════════════════════════════════════════
+
+🔄 MUDANÇA 1: Remover Botão Deletar da Tabela
+─────────────────────────────────────────────────────────────────────────────
+
+Localização: Função displayOccurrences() - linha ~280
+
+ANTES:
+    tbody.innerHTML = occurrences.map(occ => {
+        ...
+        return `
+            ...
+            <td>
+                <button onclick="event.stopPropagation(); 
+                        editOccurrenceById('${occ.id}')" 
+                        class="btn-primary btn-sm">✏️</button>
+                <button onclick="event.stopPropagation(); 
+                        deleteOccurrenceById('${occ.id}')" 
+                        class="btn-danger btn-sm">🗑️</button>
+            </td>
+        `;
+    }).join('');
+
+DEPOIS:
+    tbody.innerHTML = occurrences.map(occ => {
+        ...
+        return `
+            ...
+            <td>
+                <button onclick="event.stopPropagation(); 
+                        editOccurrenceById('${occ.id}')" 
+                        class="btn-primary btn-sm">✏️</button>
+            </td>
+        `;
+    }).join('');
+
+🚫 Impacto:
+   • Tabela de ocorrências não tem mais botão de deletar
+   • Apenas edição disponível
+
+
+🔄 MUDANÇA 2: Desabilitar Função deleteOccurrence()
+─────────────────────────────────────────────────────────────────────────────
+
+Localização: Linha ~540
+
+ANTES:
+    // Excluir ocorrência
+    async function deleteOccurrence() {
+        if (!selectedOccurrence) return;
+        
+        const currentUser = authManager.getCurrentUser();
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        
+        if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
+            showToast('Você só pode excluir suas próprias ocorrências', 'error');
+            return;
+        }
+        
+        showDeleteConfirmation(selectedOccurrence.id);
+    }
+
+DEPOIS:
+    // Excluir ocorrência - DESABILITADO (não permitido deletar ocorrências)
+    // async function deleteOccurrence() {
+    //     if (!selectedOccurrence) return;
+    //     
+    //     const currentUser = authManager.getCurrentUser();
+    //     const isAdmin = currentUser && currentUser.role === 'admin';
+    //     
+    //     if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
+    //         showToast('Você só pode excluir suas próprias ocorrências', 'error');
+    //         return;
+    //     }
+    //     
+    //     showDeleteConfirmation(selectedOccurrence.id);
+    // }
+
+🚫 Impacto:
+   • Função comentada (não executará)
+   • Chama onclick="deleteOccurrence()" agora gera erro
+   • Protege contra exclusão acidental
+
+
+🔄 MUDANÇA 3: Desabilitar Função deleteOccurrenceById()
+─────────────────────────────────────────────────────────────────────────────
+
+Localização: Linha ~556
+
+ANTES:
+    async function deleteOccurrenceById(id) {
+        const occurrence = currentOccurrences.find(occ => occ.id === id);
+        if (!occurrence) return;
+        
+        const currentUser = authManager.getCurrentUser();
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        
+        if (!isAdmin && occurrence.created_by !== currentUser.id) {
+            showToast('Você só pode excluir suas próprias ocorrências', 'error');
+            return;
+        }
+        
+        showDeleteConfirmation(id);
+    }
+
+DEPOIS:
+    // Excluir ocorrência por ID - DESABILITADO (não permitido deletar ocorrências)
+    // async function deleteOccurrenceById(id) {
+    //     const occurrence = currentOccurrences.find(occ => occ.id === id);
+    //     if (!occurrence) return;
+    //     
+    //     const currentUser = authManager.getCurrentUser();
+    //     const isAdmin = currentUser && currentUser.role === 'admin';
+    //     
+    //     if (!isAdmin && occurrence.created_by !== currentUser.id) {
+    //         showToast('Você só pode excluir suas próprias ocorrências', 'error');
+    //         return;
+    //     }
+    //     
+    //     showDeleteConfirmation(id);
+    // }
+
+🚫 Impacto:
+   • Função comentada (não executará)
+   • Botão da tabela já removido (não chama função)
+   • Proteção dupla contra exclusão
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+📊 RESUMO DE MUDANÇAS
+════════════════════════════════════════════════════════════════════════════════
+
+Total de Arquivos Modificados: 2
+Total de Mudanças: 5
+
+✅ index.html:  2 mudanças
+   ├─ Campo Transportadora: INPUT → SELECT (10 opções)
+   └─ Modal: Removido botão deletar
+
+✅ app.js: 3 mudanças
+   ├─ Tabela: Removido botão deletar
+   ├─ Função deleteOccurrence(): Desabilitada
+   └─ Função deleteOccurrenceById(): Desabilitada
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+⚙️ DADOS TÉCNICOS
+════════════════════════════════════════════════════════════════════════════════
+
+Transportadoras (10 opções):
+1. São Miguel
+2. Leomar
+3. LKW
+4. Fritz
+5. Vapt Vupt
+6. Multi
+7. Minuano
+8. Garcias
+9. Fortimed
+10. Outros
+
+Banco de Dados:
+• Coluna: transportadora
+• Tipo: TEXT
+• Nullable: SIM
+• Índice: idx_occurrences_transportadora
+• Compatibilidade: Ocorrências antigas terão NULL
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+✅ STATUS
+════════════════════════════════════════════════════════════════════════════════
+
+Código HTML: ✅ Alterado
+Código JavaScript: ✅ Alterado
+Banco de Dados: ⏳ Pronto para SQL
+Testes: ⏳ Aguardando execução
+Produção: ⏳ Aguardando implantação
+
+Percentual Completo: 60% (falta SQL e testes)
+
+
+════════════════════════════════════════════════════════════════════════════════
+Data: 17 de outubro de 2025
+════════════════════════════════════════════════════════════════════════════════

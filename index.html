@@ -93,7 +93,19 @@
 
                     <div class="form-group">
                         <label for="transportadora">Transportadora:</label>
-                        <input type="text" id="transportadora" required placeholder="Ex: Sedex, Transportadora XYZ">
+                        <select id="transportadora" name="transportadora" required>
+                            <option value="">-- Selecione uma transportadora --</option>
+                            <option value="São Miguel">São Miguel</option>
+                            <option value="Leomar">Leomar</option>
+                            <option value="LKW">LKW</option>
+                            <option value="Fritz">Fritz</option>
+                            <option value="Vapt Vupt">Vapt Vupt</option>
+                            <option value="Multi">Multi</option>
+                            <option value="Minuano">Minuano</option>
+                            <option value="Garcias">Garcias</option>
+                            <option value="Fortimed">Fortimed</option>
+                            <option value="Outros">Outros</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -181,7 +193,6 @@
             <div id="modalBody"></div>
             <div class="modal-actions">
                 <button onclick="editOccurrence()" class="btn-primary">✏️ Editar</button>
-                <button onclick="deleteOccurrence()" class="btn-danger">🗑️ Excluir</button>
                 <button onclick="closeModal()" class="btn-secondary">Fechar</button>
             </div>
         </div>

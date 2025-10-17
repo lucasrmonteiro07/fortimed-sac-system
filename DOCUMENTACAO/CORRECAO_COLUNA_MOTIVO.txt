@@ -1,0 +1,90 @@
+✅ ERRO: COLUNA 'SOLICITANTE' NÃO ENCONTRADA
+═════════════════════════════════════════════════════════════════════════════════
+
+❌ ERRO RECEBIDO:
+─────────────────
+"Could not find the 'solicitante' column of 'occurrences' in the schema cache"
+
+📝 SIGNIFICADO:
+───────────────
+A tabela 'occurrences' não possui a coluna 'solicitante' que o sistema está tentando usar.
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🚀 SOLUÇÃO RÁPIDA (EXECUTE ISTO AGORA)
+═════════════════════════════════════════════════════════════════════════════════
+
+No Supabase SQL Editor, execute os comandos abaixo EM SEQUÊNCIA:
+
+
+PASSO 1: ADICIONAR A COLUNA
+──────────────────────────
+
+ALTER TABLE occurrences
+ADD COLUMN solicitante TEXT;
+
+
+PASSO 2: CRIAR ÍNDICE (PARA PERFORMANCE)
+────────────────────────────────────────
+
+CREATE INDEX idx_occurrences_solicitante ON occurrences(solicitante);
+
+
+PASSO 3: VERIFICAR SE FUNCIONOU
+────────────────────────────────
+
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'occurrences' AND column_name = 'solicitante';
+
+-- Esperado: Deve retornar uma linha mostrando 'solicitante' como TEXT
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📍 COMO EXECUTAR:
+──────────────────
+1. Acesse: https://app.supabase.com/
+2. SQL Editor → New Query
+3. Cole CADA comando acima (um por vez)
+4. Clique "Run" para cada um
+5. Aguarde confirmação
+
+
+✅ RESULTADO ESPERADO:
+──────────────────────
+Passo 1: "success" ou "statement executed successfully"
+Passo 2: "success" (índice criado)
+Passo 3: Uma linha mostrando a coluna 'solicitante' como TEXT
+
+
+DEPOIS DE EXECUTAR:
+───────────────────
+1. Recarregue a página do sistema
+2. Tente salvar uma ocorrência novamente
+3. Deve funcionar corretamente agora
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+ℹ️ O QUE ESTA COLUNA FAZ:
+──────────────────────────
+• Armazena o nome do usuário que criou a ocorrência
+• Preenchimento automático (não precisa digitar)
+• Útil para auditoria e controle
+• Tipo TEXT permite nomes de qualquer tamanho
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+Se a coluna já existir e estiver causando problema:
+
+DELETE FROM occurrences WHERE solicitante IS NULL;
+
+ALTER TABLE occurrences 
+DROP COLUMN solicitante;
+
+-- Depois execute novamente os passos acima
+
+
+═════════════════════════════════════════════════════════════════════════════════

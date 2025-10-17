@@ -1,0 +1,100 @@
+⚠️ VENDAS01 VÊ APENAS SUAS OCORRÊNCIAS - SOLUÇÃO FINAL
+═════════════════════════════════════════════════════════════════════════════════
+
+🔍 PROBLEMA ATUAL
+──────────────────
+✅ Alterou segurança
+✅ Desabilitou RLS
+❌ MAS: vendas01 ainda vê APENAS suas ocorrências
+
+📝 CAUSA
+────────
+As POLÍTICAS RLS antigas ainda estão ativas.
+Precisa REMOVER as políticas, depois desabilitar RLS.
+
+═════════════════════════════════════════════════════════════════════════════════
+
+✅ SOLUÇÃO (4 LINHAS)
+═════════════════════════════════════════════════════════════════════════════════
+
+No Supabase SQL Editor, execute isto EM SEQUÊNCIA:
+
+
+1️⃣ DROP POLICY IF EXISTS admin_can_view_all_occurrences ON occurrences;
+
+2️⃣ DROP POLICY IF EXISTS users_can_view_own_occurrences ON occurrences;
+
+3️⃣ DROP POLICY IF EXISTS admin_can_create_occurrences ON occurrences;
+
+4️⃣ DROP POLICY IF EXISTS users_can_create_own_occurrences ON occurrences;
+
+5️⃣ DROP POLICY IF EXISTS admin_can_update_occurrences ON occurrences;
+
+6️⃣ DROP POLICY IF EXISTS users_can_update_own_occurrences ON occurrences;
+
+7️⃣ ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+
+Resultado esperado: "success" para cada linha
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📍 PASSO A PASSO
+─────────────────
+
+1. https://app.supabase.com/
+
+2. SQL Editor > New Query
+
+3. Cole CADA linha acima (uma por uma) e clique "Run"
+
+4. Ao terminar, recarregue tudo:
+   • Ctrl+Shift+R (hard refresh)
+   • Faça logout
+   • Faça login novamente com vendas01
+   • Vá para Relatórios
+
+5. Agora vendas01 deve ver TODAS as ocorrências! ✅
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+✅ VERIFICAÇÃO
+────────────────
+
+Execute isto para confirmar:
+
+SELECT tablename, rowsecurity FROM pg_tables WHERE tablename = 'occurrences';
+
+Resultado esperado:
+  tablename  | rowsecurity
+  occurrences| false  (RLS está DESABILITADO)
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+🧪 TESTE FINAL
+────────────────
+
+1. Login como vendas01
+2. Vá para Relatórios
+3. Veja ocorrências de TODOS
+4. ✅ Se ver tudo = Problema resolvido!
+5. ❌ Se ainda só vê suas = Problema no código JavaScript
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+❌ SE AINDA NÃO FUNCIONAR
+──────────────────────────
+
+Pode ser filtro NO CÓDIGO (não no banco):
+
+Procure em app.js:
+  SELECT * FROM occurrences WHERE user_id = auth.uid()
+
+Se encontrar, comente e teste novamente.
+
+
+═════════════════════════════════════════════════════════════════════════════════

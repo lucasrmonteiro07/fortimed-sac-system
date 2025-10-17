@@ -1,0 +1,31 @@
+════════════════════════════════════════════════════════════════════════════
+🚀 ALTERAR PERMISSÕES AGORA - ACESSO TOTAL
+════════════════════════════════════════════════════════════════════════════
+
+⏰ TEMPO: 30 SEGUNDOS
+
+📋 EXECUTE ISTO NO SUPABASE SQL EDITOR:
+
+    ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+
+✅ RESULTADO:
+
+  ✅ Todos veem TODAS as ocorrências
+  ✅ Todos podem editar qualquer ocorrência
+  ✅ Sem restrições de acesso
+  ✅ Sem bloqueios
+
+
+📍 PASSOS:
+
+  1. https://app.supabase.com/ → SQL Editor
+  2. New Query
+  3. Cole o comando acima
+  4. Run
+  5. Pronto! ✅
+
+
+════════════════════════════════════════════════════════════════════════════
+Arquivo: SQL/permitir-acesso-total-todas-ocorrencias.sql
+════════════════════════════════════════════════════════════════════════════

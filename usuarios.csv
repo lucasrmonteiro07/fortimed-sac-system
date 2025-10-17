@@ -1,5 +1,6 @@
 email,password,role,name
 administrativo@fortimeddistribuidora.com.br,Compras@01,admin,Administrador
+anapaula@fortimeddistribuidora.com.br,Compras@01,admin,Ana Paula
 vendas01@fortimeddistribuidora.com.br,vendas01,user,Vendas 01
 vendas02@fortimeddistribuidora.com.br,vendas02,user,Vendas 02
 vendas03@fortimeddistribuidora.com.br,vendas03,user,Vendas 03

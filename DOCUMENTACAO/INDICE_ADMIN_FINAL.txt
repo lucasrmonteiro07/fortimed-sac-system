@@ -1,0 +1,47 @@
+═════════════════════════════════════════════════════════════════════════════════
+🎯 FLUXO FINAL - FAZER ANA PAULA ADMIN
+═════════════════════════════════════════════════════════════════════════════════
+
+STATUS ATUAL:
+  ✅ Usuário criado em auth.users
+  ⏳ Falta: Adicionar à tabela public.users como 'admin'
+
+
+📋 ARQUIVOS RELACIONADOS:
+  ⭐ FAZER_ADMIN_AGORA.txt ← COMECE AQUI (1 minuto)
+  📖 COMO_FAZER_ADMIN.txt (passo a passo detalhado)
+  📄 PROXIMAS_ACOES.txt (resumo de ações)
+  💾 SQL/adicionar-anapaula-admin.sql (script SQL completo)
+
+
+🚀 RESUMO RÁPIDO DO QUE FAZER:
+═════════════════════════════════════════════════════════════════════════════════
+
+1. Abra: https://app.supabase.com/
+2. SQL Editor > New Query
+3. Cole este SQL:
+
+   INSERT INTO public.users (id, email, name, role) VALUES
+   ('2e6d9014-8fdf-4e5a-b41f-ac7e2c2ea53f', 
+    'anapaula@fortimeddistribuidora.com.br', 
+    'Ana Paula', 
+    'admin');
+
+4. Clique "Run"
+5. Veja: "SUCCESS: 1 row(s) inserted"
+6. Pronto! ✅
+
+
+✅ TESTE:
+═════════════════════════════════════════════════════════════════════════════════
+
+Login:     anapaula@fortimeddistribuidora.com.br
+Senha:     Compras@01
+URL:       http://seu-servidor/login.html
+Esperado:  👑 Ana Paula (Admin) no topo
+
+
+═════════════════════════════════════════════════════════════════════════════════
+⏱️ Tempo: 1 minuto
+✅ Resultado: Admin completo no sistema
+═════════════════════════════════════════════════════════════════════════════════

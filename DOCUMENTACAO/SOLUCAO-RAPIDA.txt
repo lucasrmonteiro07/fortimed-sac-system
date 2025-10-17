@@ -1,0 +1,48 @@
+⚠️ PERMISSÕES NÃO FUNCIONANDO - SOLUÇÃO COMPLETA
+════════════════════════════════════════════════════════════════════════════
+
+📊 PROBLEMA:
+   vendas01 ainda vê apenas suas ocorrências mesmo após alterar segurança
+
+✅ SOLUÇÃO (4 PASSOS):
+
+PASSO 1: Remover TODAS as políticas antigas
+─────────────────────────────────────────
+
+DROP POLICY IF EXISTS admin_can_view_all_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_view_own_occurrences ON occurrences;
+DROP POLICY IF EXISTS admin_can_create_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_create_own_occurrences ON occurrences;
+DROP POLICY IF EXISTS admin_can_update_occurrences ON occurrences;
+DROP POLICY IF EXISTS users_can_update_own_occurrences ON occurrences;
+DROP POLICY IF EXISTS allow_all ON occurrences;
+
+
+PASSO 2: Desabilitar RLS
+────────────────────────
+
+ALTER TABLE occurrences DISABLE ROW LEVEL SECURITY;
+
+
+PASSO 3: Verificar
+──────────────────
+
+SELECT tablename, rowsecurity FROM pg_tables WHERE tablename = 'occurrences';
+(Deve retornar: rowsecurity = false)
+
+
+PASSO 4: Limpar cache
+─────────────────────
+1. F12 (DevTools)
+2. Disable cache
+3. Ctrl+Shift+R (hard refresh)
+4. Faça login novamente
+
+
+🧪 TESTE:
+  Login como vendas01 → Vá para Relatórios → Deve ver TODAS agora
+
+
+════════════════════════════════════════════════════════════════════════════
+Mais detalhes: SOLUCAO_ERRO_PASSWORD_HASH.txt
+════════════════════════════════════════════════════════════════════════════
