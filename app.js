@@ -193,6 +193,9 @@ function showTab(tabOrName, maybeName) {
         loadOccurrences();
     } else if (tabName === 'config') {
         loadConfig();
+    } else if (tabName === 'novo') {
+        // Limpar formulário automaticamente ao clicar em "Nova Ocorrência"
+        clearOccurrenceForm();
     }
 }
 
@@ -399,6 +402,32 @@ async function saveOccurrence(event) {
         hideLoadingSpinner();
         console.error('Erro ao salvar ocorrência:', error);
         showToast('✕ Erro ao salvar: ' + error.message, 'error');
+    }
+}
+
+// Limpar formulário de ocorrência automaticamente
+function clearOccurrenceForm() {
+    // Resetar todos os campos do formulário
+    document.getElementById('occurrenceForm').reset();
+    
+    // Limpar campos hidden
+    document.getElementById('occurrenceId').value = '';
+    document.getElementById('responsavelFalha').value = '';
+    document.getElementById('responsavelResolucao').value = '';
+    
+    // Resetar variável de ocorrência selecionada
+    selectedOccurrence = null;
+    
+    // Atualizar título do formulário
+    const formTitleElement = document.getElementById('formTitle');
+    if (formTitleElement) {
+        formTitleElement.textContent = '➕ Nova Ocorrência';
+    }
+    
+    // Preencher solicitante automaticamente com o usuário logado
+    const currentUser = authManager.getCurrentUser();
+    if (currentUser && currentUser.email) {
+        document.getElementById('solicitante').value = currentUser.email;
     }
 }
 
