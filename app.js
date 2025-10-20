@@ -505,15 +505,6 @@ function showOccurrenceDetails(id) {
 function editOccurrence() {
     if (!selectedOccurrence) return;
 
-    // Verificar se a ocorrência pertence ao usuário logado ou se é admin
-    const currentUser = authManager.getCurrentUser();
-    const isAdmin = currentUser && currentUser.role === 'admin';
-    
-    if (!isAdmin && selectedOccurrence.created_by !== currentUser.id) {
-        alert('❌ Você só pode editar suas próprias ocorrências.');
-        return;
-    }
-
     // Preencher formulário
     const occurrenceIdField = document.getElementById('occurrenceId');
     if (occurrenceIdField) occurrenceIdField.value = selectedOccurrence.id;
