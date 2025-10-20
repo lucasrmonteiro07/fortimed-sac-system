@@ -92,12 +92,6 @@ header {
     margin: 0;
 }
 
-.logo-fallback {
-    display: inline-block;
-    margin-right: 15px;
-    vertical-align: middle;
-}
-
 .user-info {
     display: flex;
     align-items: center;
