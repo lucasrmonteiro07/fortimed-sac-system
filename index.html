@@ -40,6 +40,11 @@
                         <span class="search-icon">🔍</span>
                         <input type="text" id="searchInput" placeholder="Buscar por pedido, cliente, transportadora..." onkeyup="searchOccurrences()">
                     </div>
+                    <div class="filter-box" style="margin-left: 10px;">
+                        <select id="filterSolicitante" onchange="searchOccurrences()" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                            <option value="">Todos os Solicitantes</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="table-wrapper" style="overflow-x: auto; height: calc(100vh - 250px); flex: 1;">
                     <table class="occurrences-table">
@@ -50,6 +55,7 @@
                                 <th>Cliente</th>
                                 <th>Status</th>
                                 <th>Data</th>
+                                <th>Criado por</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>

@@ -100,20 +100,25 @@ async function confirmDelete() {
 // ========== BUSCA EM TEMPO REAL ==========
 function searchOccurrences() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const solicitanteFilter = document.getElementById('filterSolicitante').value;
     
-    if (!searchTerm) {
-        filteredOccurrences = [...currentOccurrences];
-    } else {
-        filteredOccurrences = currentOccurrences.filter(occ => {
-            const num = String(occ.num_pedido).toLowerCase();
-            const cliente = (occ.nome_cliente || '').toLowerCase();
-            const transportadora = (occ.transportadora || '').toLowerCase();
-            
-            return num.includes(searchTerm) || 
-                   cliente.includes(searchTerm) || 
-                   transportadora.includes(searchTerm);
-        });
-    }
+    filteredOccurrences = currentOccurrences.filter(occ => {
+        const num = String(occ.num_pedido).toLowerCase();
+        const cliente = (occ.nome_cliente || '').toLowerCase();
+        const transportadora = (occ.transportadora || '').toLowerCase();
+        const criadoPor = (occ.users?.name || '').toLowerCase();
+        
+        const matchesSearch = !searchTerm || 
+                            num.includes(searchTerm) || 
+                            cliente.includes(searchTerm) || 
+                            transportadora.includes(searchTerm) ||
+                            criadoPor.includes(searchTerm);
+        
+        const matchesSolicitante = !solicitanteFilter || 
+                                  (occ.users?.name === solicitanteFilter);
+        
+        return matchesSearch && matchesSolicitante;
+    });
     
     currentPage = 1;
     paginateOccurrences();
@@ -121,8 +126,10 @@ function searchOccurrences() {
 
 // ========== PAGINAÇÃO ==========
 function paginateOccurrences() {
+    const tbody = document.getElementById('occurrencesBody');
+    
     if (filteredOccurrences.length === 0) {
-        displayOccurrences([]);
+        tbody.innerHTML = `<tr><td colspan="7" class="loading">📭 Nenhuma ocorrência encontrada.</td></tr>`;
         document.getElementById('paginationContainer').style.display = 'none';
         return;
     }
@@ -204,7 +211,7 @@ function showTab(tabOrName, maybeName) {
 // Carregar ocorrências do banco de dados
 async function loadOccurrences() {
     const tbody = document.getElementById('occurrencesBody');
-    tbody.innerHTML = '<tr><td colspan="6" class="loading">🔄 Carregando ocorrências...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="loading">🔄 Carregando ocorrências...</td></tr>';
 
     try {
         const client = config.getClient();
@@ -236,13 +243,35 @@ async function loadOccurrences() {
         filteredOccurrences = [...filteredData];
         currentPage = 1;
         document.getElementById('searchInput').value = '';
+        
+        // Preencher filtro de solicitantes
+        populateSolicitanteFilter(filteredData);
+        
         paginateOccurrences();
         
 
     } catch (error) {
         console.error('Erro ao carregar ocorrências:', error);
-        tbody.innerHTML = `<tr><td colspan="6" class="loading">❌ Erro: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="loading">❌ Erro: ${error.message}</td></tr>`;
     }
+}
+
+// Preencher dropdown de solicitantes
+function populateSolicitanteFilter(occurrences) {
+    const filterSelect = document.getElementById('filterSolicitante');
+    if (!filterSelect) return;
+    
+    // Obter lista única de solicitantes
+    const solicitantes = [...new Set(occurrences.map(occ => occ.users?.name).filter(Boolean))].sort();
+    
+    // Limpar e reconstruir opções
+    filterSelect.innerHTML = '<option value="">Todos os Solicitantes</option>';
+    solicitantes.forEach(solicitante => {
+        const option = document.createElement('option');
+        option.value = solicitante;
+        option.textContent = solicitante;
+        filterSelect.appendChild(option);
+    });
 }
 
 // Exibir ocorrências na tabela
@@ -252,32 +281,11 @@ function displayOccurrences(occurrences) {
     const isAdmin = currentUser && currentUser.role === 'admin';
 
     if (occurrences.length === 0) {
-        const colspan = isAdmin ? '7' : '6';
-        tbody.innerHTML = `<tr><td colspan="${colspan}" class="loading">📭 Nenhuma ocorrência encontrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="loading">📭 Nenhuma ocorrência encontrada.</td></tr>`;
         return;
     }
 
-    // Buscar informações dos usuários se for admin
-    if (isAdmin) {
-        // Adicionar coluna de criado por para admin
-        const thead = document.querySelector('thead tr');
-        if (thead && !thead.querySelector('.criado-por-header')) {
-            thead.innerHTML = `
-                <th>Nº Pedido</th>
-                <th>Cliente</th>
-                <th>Transportadora</th>
-                <th>Status</th>
-                <th>Data</th>
-                <th class="criado-por-header">Criado por</th>
-                <th>Ações</th>
-            `;
-        }
-    }
-
     tbody.innerHTML = occurrences.map(occ => {
-        const createdByInfo = isAdmin ? 
-            `<td class="criado-por">${escapeHtml(occ.users?.name || 'Usuário')}</td>` : '';
-        
         // Botão de delete: APENAS para admin
         const deleteButton = isAdmin ? 
             `<button onclick="event.stopPropagation(); showDeleteConfirmation('${occ.id}')" class="btn-danger btn-sm" title="Deletar">🗑️</button>` : '';
@@ -285,11 +293,11 @@ function displayOccurrences(occurrences) {
         return `
             <tr onclick="showOccurrenceDetails('${occ.id}')">
                 <td><strong>${escapeHtml(occ.num_pedido)}</strong></td>
-                <td>${escapeHtml(occ.nome_cliente)}</td>
                 <td>${escapeHtml(occ.transportadora)}</td>
+                <td>${escapeHtml(occ.nome_cliente)}</td>
                 <td><span class="status-badge status-${normalizeStatus(occ.status)}">${formatStatus(occ.status)}</span></td>
                 <td>${formatDate(occ.created_at)}</td>
-                ${createdByInfo}
+                <td>${escapeHtml(occ.users?.name || 'Usuário')}</td>
                 <td>
                     <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm" title="Editar">✏️</button>
                     ${deleteButton}
@@ -457,6 +465,10 @@ function showOccurrenceDetails(id) {
         </div>
         ` : ''}
         <div class="detail-item">
+            <div class="detail-label">Criado por</div>
+            <div class="detail-value">${escapeHtml(occurrence.users?.name || 'Usuário')}</div>
+        </div>
+        <div class="detail-item">
             <div class="detail-label">Ocorrência</div>
             <div class="detail-value">${escapeHtml(occurrence.ocorrencia)}</div>
         </div>
@@ -617,7 +629,10 @@ function escapeHtml(text) {
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    
+    // Converter para horário de Brasília (UTC-3)
+    return date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + ' ' + 
+           date.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
 }
 
 function normalizeStatus(status) {
@@ -653,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Se não estiver logado, mostrar mensagem
         const tbody = document.getElementById('occurrencesBody');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="6" class="loading">🔐 Faça login para ver as ocorrências</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">🔐 Faça login para ver as ocorrências</td></tr>';
         }
     }
 });

@@ -1513,6 +1513,7 @@ tbody tr:hover {
     gap: 15px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .search-box {
@@ -1543,6 +1544,28 @@ tbody tr:hover {
     transform: translateY(-50%);
     color: var(--text-secondary);
     pointer-events: none;
+}
+
+.filter-box {
+    min-width: 200px;
+}
+
+.filter-box select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: var(--surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.filter-box select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* ========== PAGINATION ========== */
