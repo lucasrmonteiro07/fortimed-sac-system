@@ -297,6 +297,7 @@ function displayOccurrences(occurrences) {
                 <td>${escapeHtml(occ.nome_cliente)}</td>
                 <td><span class="status-badge status-${normalizeStatus(occ.status)}">${formatStatus(occ.status)}</span></td>
                 <td>${formatDate(occ.created_at)}</td>
+                <td>${escapeHtml(occ.solicitante || 'Usuário')}</td>
                 <td>
                     <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm" title="Editar">✏️</button>
                     ${deleteButton}
