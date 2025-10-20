@@ -228,14 +228,8 @@ async function loadOccurrences() {
 
         if (error) throw error;
 
-        // Filtrar dados baseado no role do usuário
-        let filteredData = data || [];
-        
-        if (!isAdmin) {
-            // Usuário normal vê apenas suas próprias ocorrências
-            filteredData = data.filter(occ => occ.created_by === session.user.id);
-        }
-        
+        // TODOS veem TODAS as ocorrências (RLS desabilitado)
+        const filteredData = data || [];
         currentOccurrences = filteredData;
         filteredOccurrences = [...filteredData];
         currentPage = 1;
@@ -358,23 +352,14 @@ async function saveOccurrence(event) {
 
         if (occurrenceId) {
             // Atualizar ocorrência existente
-            const currentUser = authManager.getCurrentUser();
-            const isAdmin = currentUser && currentUser.role === 'admin';
-            
-            let updateQuery = client
+            // TODOS podem editar (RLS desabilitado)
+            const { error } = await client
                 .from('occurrences')
                 .update({
                     ...baseData,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', occurrenceId);
-            
-            // Admin pode editar qualquer ocorrência, user só a sua
-            if (!isAdmin) {
-                updateQuery = updateQuery.eq('created_by', session.user.id);
-            }
-            
-            const { error } = await updateQuery;
 
             if (error) throw error;
 
