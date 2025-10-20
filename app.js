@@ -1,4 +1,3 @@
-                <td>${escapeHtml(occ.solicitante || '')}</td>
 // Aplicação Principal - Gerenciamento de Ocorrências
 
 let currentOccurrences = [];
