@@ -507,6 +507,9 @@ function showOccurrenceDetails(id) {
 function editOccurrence() {
     if (!selectedOccurrence) return;
 
+    // Guardar referência para usar dentro do setTimeout
+    const occurrenceToEdit = selectedOccurrence;
+
     // Fechar modal primeiro
     closeModal();
 
@@ -516,24 +519,26 @@ function editOccurrence() {
 
     // DEPOIS de mudar de aba, preencher o formulário
     setTimeout(() => {
-        const occurrenceIdField = document.getElementById('occurrenceId');
-        if (occurrenceIdField) occurrenceIdField.value = selectedOccurrence.id;
+        if (!occurrenceToEdit) return; // Verificação de segurança
         
-        document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
-        document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
-        document.getElementById('transportadora').value = selectedOccurrence.transportadora;
-        document.getElementById('nomeCliente').value = selectedOccurrence.nome_cliente;
-        document.getElementById('solicitante').value = selectedOccurrence.solicitante || '';
-        document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
-        document.getElementById('motivo').value = selectedOccurrence.motivo || '';
-        document.getElementById('status').value = selectedOccurrence.status;
-        document.getElementById('situacao').value = selectedOccurrence.situacao || '';
+        const occurrenceIdField = document.getElementById('occurrenceId');
+        if (occurrenceIdField) occurrenceIdField.value = occurrenceToEdit.id;
+        
+        document.getElementById('numPedido').value = occurrenceToEdit.num_pedido;
+        document.getElementById('notaFiscal').value = occurrenceToEdit.nota_fiscal || '';
+        document.getElementById('transportadora').value = occurrenceToEdit.transportadora;
+        document.getElementById('nomeCliente').value = occurrenceToEdit.nome_cliente;
+        document.getElementById('solicitante').value = occurrenceToEdit.solicitante || '';
+        document.getElementById('ocorrencia').value = occurrenceToEdit.ocorrencia;
+        document.getElementById('motivo').value = occurrenceToEdit.motivo || '';
+        document.getElementById('status').value = occurrenceToEdit.status;
+        document.getElementById('situacao').value = occurrenceToEdit.situacao || '';
         
         const falhaField = document.getElementById('responsavelFalha');
-        if (falhaField) falhaField.value = selectedOccurrence.responsavel_falha || '';
+        if (falhaField) falhaField.value = occurrenceToEdit.responsavel_falha || '';
         
         const resolucaoField = document.getElementById('responsavelResolucao');
-        if (resolucaoField) resolucaoField.value = selectedOccurrence.responsavel_resolucao || '';
+        if (resolucaoField) resolucaoField.value = occurrenceToEdit.responsavel_resolucao || '';
 
         // Atualizar título do formulário para mostrar que está editando
         const formTitleElement = document.getElementById('formTitle');
