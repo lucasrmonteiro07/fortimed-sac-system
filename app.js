@@ -68,22 +68,22 @@ async function confirmDelete() {
     
     showLoadingSpinner('Deletando ocorrência...');
     try {
-        const client = config.getClient();
-        const { data: { session } } = await client.auth.getSession();
         const currentUser = authManager.getCurrentUser();
         const isAdmin = currentUser && currentUser.role === 'admin';
         
-        // Admin pode deletar qualquer registro, user só seus próprios
-        let query = client
+        // SEGURANÇA: Apenas admin pode deletar
+        if (!isAdmin) {
+            hideLoadingSpinner();
+            showToast('❌ Apenas administradores podem deletar ocorrências!', 'error');
+            cancelDelete();
+            return;
+        }
+        
+        const client = config.getClient();
+        const { error } = await client
             .from('occurrences')
             .delete()
             .eq('id', pendingDeleteId);
-        
-        if (!isAdmin) {
-            query = query.eq('created_by', session.user.id);
-        }
-        
-        const { error } = await query;
         
         if (error) throw error;
         
@@ -282,6 +282,10 @@ function displayOccurrences(occurrences) {
         const createdByInfo = isAdmin ? 
             `<td class="criado-por">${escapeHtml(occ.users?.name || 'Usuário')}</td>` : '';
         
+        // Botão de delete: APENAS para admin
+        const deleteButton = isAdmin ? 
+            `<button onclick="event.stopPropagation(); showDeleteConfirmation('${occ.id}')" class="btn-danger btn-sm" title="Deletar">🗑️</button>` : '';
+        
         return `
             <tr onclick="showOccurrenceDetails('${occ.id}')">
                 <td><strong>${escapeHtml(occ.num_pedido)}</strong></td>
@@ -291,7 +295,8 @@ function displayOccurrences(occurrences) {
                 <td>${formatDate(occ.created_at)}</td>
                 ${createdByInfo}
                 <td>
-                    <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm">✏️</button>
+                    <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm" title="Editar">✏️</button>
+                    ${deleteButton}
                 </td>
             </tr>
         `;
