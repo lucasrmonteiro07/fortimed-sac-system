@@ -1,3 +1,4 @@
+                <td>${escapeHtml(occ.solicitante || '')}</td>
 // Aplicação Principal - Gerenciamento de Ocorrências
 
 let currentOccurrences = [];
@@ -297,7 +298,6 @@ function displayOccurrences(occurrences) {
                 <td>${escapeHtml(occ.nome_cliente)}</td>
                 <td><span class="status-badge status-${normalizeStatus(occ.status)}">${formatStatus(occ.status)}</span></td>
                 <td>${formatDate(occ.created_at)}</td>
-                <td>${escapeHtml(occ.users?.name || 'Usuário')}</td>
                 <td>
                     <button onclick="event.stopPropagation(); editOccurrenceById('${occ.id}')" class="btn-primary btn-sm" title="Editar">✏️</button>
                     ${deleteButton}
@@ -466,7 +466,7 @@ function showOccurrenceDetails(id) {
         ` : ''}
         <div class="detail-item">
             <div class="detail-label">Criado por</div>
-            <div class="detail-value">${escapeHtml(occurrence.users?.name || 'Usuário')}</div>
+            <div class="detail-value">${escapeHtml(occurrence.solicitante || 'Usuário')}</div>
         </div>
         <div class="detail-item">
             <div class="detail-label">Ocorrência</div>
