@@ -194,8 +194,10 @@ function showTab(tabOrName, maybeName) {
     } else if (tabName === 'config') {
         loadConfig();
     } else if (tabName === 'novo') {
-        // Limpar formulário automaticamente ao clicar em "Nova Ocorrência"
-        clearOccurrenceForm();
+        // Limpar formulário automaticamente ao clicar em "Nova Ocorrência" APENAS se não estiver editando
+        if (!selectedOccurrence) {
+            clearOccurrenceForm();
+        }
     }
 }
 
