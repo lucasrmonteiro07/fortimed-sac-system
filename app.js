@@ -507,33 +507,38 @@ function showOccurrenceDetails(id) {
 function editOccurrence() {
     if (!selectedOccurrence) return;
 
-    // Preencher formulário
-    const occurrenceIdField = document.getElementById('occurrenceId');
-    if (occurrenceIdField) occurrenceIdField.value = selectedOccurrence.id;
-    
-    document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
-    document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
-    document.getElementById('transportadora').value = selectedOccurrence.transportadora;
-    document.getElementById('nomeCliente').value = selectedOccurrence.nome_cliente;
-    document.getElementById('solicitante').value = selectedOccurrence.solicitante || '';
-    document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
-    document.getElementById('motivo').value = selectedOccurrence.motivo || '';
-    document.getElementById('status').value = selectedOccurrence.status;
-    document.getElementById('situacao').value = selectedOccurrence.situacao || '';
-    
-    const falhaField = document.getElementById('responsavelFalha');
-    if (falhaField) falhaField.value = selectedOccurrence.responsavel_falha || '';
-    
-    const resolucaoField = document.getElementById('responsavelResolucao');
-    if (resolucaoField) resolucaoField.value = selectedOccurrence.responsavel_resolucao || '';
-
-    // Atualizar título do formulário para mostrar que está editando
-    const formTitleElement = document.getElementById('formTitle');
-    if (formTitleElement) formTitleElement.textContent = '✏️ Editar Ocorrência';
-
-    // Fechar modal e ir para a tab de novo
+    // Fechar modal primeiro
     closeModal();
-    document.querySelectorAll('.tab')[1].click(); // Tab "Nova Ocorrência"
+
+    // Clicar na aba "Nova Ocorrência" ANTES de preencher
+    const newOccurrenceTab = document.querySelectorAll('.tab')[1];
+    if (newOccurrenceTab) newOccurrenceTab.click();
+
+    // DEPOIS de mudar de aba, preencher o formulário
+    setTimeout(() => {
+        const occurrenceIdField = document.getElementById('occurrenceId');
+        if (occurrenceIdField) occurrenceIdField.value = selectedOccurrence.id;
+        
+        document.getElementById('numPedido').value = selectedOccurrence.num_pedido;
+        document.getElementById('notaFiscal').value = selectedOccurrence.nota_fiscal || '';
+        document.getElementById('transportadora').value = selectedOccurrence.transportadora;
+        document.getElementById('nomeCliente').value = selectedOccurrence.nome_cliente;
+        document.getElementById('solicitante').value = selectedOccurrence.solicitante || '';
+        document.getElementById('ocorrencia').value = selectedOccurrence.ocorrencia;
+        document.getElementById('motivo').value = selectedOccurrence.motivo || '';
+        document.getElementById('status').value = selectedOccurrence.status;
+        document.getElementById('situacao').value = selectedOccurrence.situacao || '';
+        
+        const falhaField = document.getElementById('responsavelFalha');
+        if (falhaField) falhaField.value = selectedOccurrence.responsavel_falha || '';
+        
+        const resolucaoField = document.getElementById('responsavelResolucao');
+        if (resolucaoField) resolucaoField.value = selectedOccurrence.responsavel_resolucao || '';
+
+        // Atualizar título do formulário para mostrar que está editando
+        const formTitleElement = document.getElementById('formTitle');
+        if (formTitleElement) formTitleElement.textContent = '✏️ Editar Ocorrência';
+    }, 50); // Pequeno delay para permitir a mudança de aba
 }
 
 function editOccurrenceById(id) {
