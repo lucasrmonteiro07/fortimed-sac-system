@@ -74,8 +74,8 @@ async function confirmDelete() {
         // SEGURANÇA: Apenas admin pode deletar
         if (!isAdmin) {
             hideLoadingSpinner();
-                <td>${formatDate(occ.created_at)}</td>
-                <td>${escapeHtml(occ.solicitante || 'Usuário')}</td>
+            showToast('❌ Apenas administradores podem deletar ocorrências!', 'error');
+            cancelDelete();
             return;
         }
         
